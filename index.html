@@ -22,172 +22,173 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-  :root { 
-    --bg-dark: #0f172a;
-    --bg-card: rgba(30, 41, 59, 0.7);
-    --primary: #06b6d4;      /* Cian */
-    --accent: #a3e635;       /* Lima */
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --whatsapp: #25D366;
-    --glass-border: 1px solid rgba(255, 255, 255, 0.1);
-  }
+/* --- ESTILOS (Sin Cambios) --- */
+:root { 
+  --bg-dark: #0f172a;
+  --bg-card: rgba(30, 41, 59, 0.7);
+  --primary: #06b6d4;      /* Cian */
+  --accent: #a3e635;       /* Lima */
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --whatsapp: #25D366;
+  --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+}
 
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-  body { 
-    font-family: 'Inter', sans-serif;
-    background-color: var(--bg-dark);
-    background-image: radial-gradient(circle at top right, #1e293b 0%, #0f172a 100%);
-    color: var(--text-main);
-    margin: 0; 
-    padding: 20px 15px 120px 15px;
-    min-height: 10vh;
-  }
-  
-  h1, h2, h3 { font-family: 'Kanit', sans-serif; margin-top: 0; letter-spacing: 0.5px; }
-  
-  h1 { 
-    font-weight: 800; font-size: 2rem; text-align: center; margin-bottom: 25px; 
-    text-transform: uppercase;
-    background: linear-gradient(to right, #22d3ee, #a3e635);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-  }
+body {  
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-dark);
+  background-image: radial-gradient(circle at top right, #1e293b 0%, #0f172a 100%);
+  color: var(--text-main);
+  margin: 0; 
+  padding: 20px 15px 120px 15px;
+  min-height: 10vh;
+}
+ 
+h1, h2, h3 { font-family: 'Kanit', sans-serif; margin-top: 0; letter-spacing: 0.5px; }
+ 
+h1 { 
+  font-weight: 800; font-size: 2rem; text-align: center; margin-bottom: 25px; 
+  text-transform: uppercase;
+  background: linear-gradient(to right, #22d3ee, #a3e635);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
 
-  h2 { font-size: 1.4rem; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
-  
-  /* ESTILO CRISTAL (Glassmorphism) */
-  .box { 
-    background: var(--bg-card);
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    border: var(--glass-border);
-    padding: 20px; border-radius: 20px; margin-bottom: 24px; 
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-    animation: fadeIn 0.5s ease-out forwards;
-  }
-  
-  /* INPUTS */
-  input, select { 
-    padding: 14px; margin-bottom: 12px; border-radius: 12px; 
-    border: 1px solid #334155; width: 100%; font-size: 16px; 
-    background: #1e293b; color: #fff; transition: all 0.3s ease;
-    font-family: 'Inter', sans-serif;
-  }
-  input:focus, select:focus { 
-    border-color: var(--primary); box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2); 
-    outline: none; background: #0f172a;
-  }
+h2 { font-size: 1.4rem; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+ 
+/* ESTILO CRISTAL (Glassmorphism) */
+.box { 
+  background: var(--bg-card);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: var(--glass-border);
+  padding: 20px; border-radius: 20px; margin-bottom: 24px; 
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.5s ease-out forwards;
+}
+ 
+/* INPUTS */
+input, select { 
+  padding: 14px; margin-bottom: 12px; border-radius: 12px; 
+  border: 1px solid #334155; width: 100%; font-size: 16px; 
+  background: #1e293b; color: #fff; transition: all 0.3s ease;
+  font-family: 'Inter', sans-serif;
+}
+input:focus, select:focus { 
+  border-color: var(--primary); box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2); 
+  outline: none; background: #0f172a;
+}
 
-  .row-inputs { display: flex; gap: 10px; }
-  
-  /* BOTONES */
-  button { 
-    padding: 16px; border-radius: 12px; border: none; cursor: pointer; 
-    font-family: 'Kanit', sans-serif; font-weight: 600; font-size: 1rem; 
-    text-transform: uppercase; letter-spacing: 1px; width: 100%; margin-top: 10px; 
-    transition: transform 0.1s;
-  }
-  button:active { transform: scale(0.97); }
-  button:disabled { opacity: 0.5; cursor: not-allowed; }
+.row-inputs { display: flex; gap: 10px; }
+ 
+/* BOTONES */
+button { 
+  padding: 16px; border-radius: 12px; border: none; cursor: pointer; 
+  font-family: 'Kanit', sans-serif; font-weight: 600; font-size: 1rem; 
+  text-transform: uppercase; letter-spacing: 1px; width: 100%; margin-top: 10px; 
+  transition: transform 0.1s;
+}
+button:active { transform: scale(0.97); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  button.primary { 
-    background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%); 
-    color: #fff; box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
-  }
-  button.secondary { background: #334155; color: var(--accent); border: 1px solid rgba(163, 230, 53, 0.2); }
-  button.whatsapp { 
-    background: var(--whatsapp); color: #fff; display: flex; align-items: center; justify-content: center; gap: 10px; 
-    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
-  }
-  button.outline { 
-    background: transparent; border: 1px solid var(--primary); color: var(--primary); 
-    font-size: 0.8rem; padding: 6px 12px; width: auto; margin: 0;
-  }
+button.primary { 
+  background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%); 
+  color: #fff; box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
+}
+button.secondary { background: #334155; color: var(--accent); border: 1px solid rgba(163, 230, 53, 0.2); }
+button.whatsapp { 
+  background: var(--whatsapp); color: #fff; display: flex; align-items: center; justify-content: center; gap: 10px; 
+  box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+}
+button.outline { 
+  background: transparent; border: 1px solid var(--primary); color: var(--primary); 
+  font-size: 0.8rem; padding: 6px 12px; width: auto; margin: 0;
+}
 
-  /* LISTAS */
-  .player-row { 
-    display: flex; justify-content: space-between; align-items: center; 
-    padding: 12px; margin-bottom: 8px; background: rgba(255,255,255,0.03); 
-    border-radius: 10px; border: 1px solid transparent;
-  }
-  .p-select { width: 22px; height: 22px; margin-right: 12px; accent-color: var(--accent); }
-  
-  .tag { padding: 4px 8px; border-radius: 4px; font-size: 10px; text-transform: uppercase; font-weight: 800; margin-left: 5px; }
-  .tag.portero { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
-  .tag.defensa { background: rgba(16, 185, 129, 0.2); color: #34d399; }
-  .tag.delantero { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+/* LISTAS */
+.player-row { 
+  display: flex; justify-content: space-between; align-items: center; 
+  padding: 12px; margin-bottom: 8px; background: rgba(255,255,255,0.03); 
+  border-radius: 10px; border: 1px solid transparent;
+}
+.p-select { width: 22px; height: 22px; margin-right: 12px; accent-color: var(--accent); }
+ 
+.tag { padding: 4px 8px; border-radius: 4px; font-size: 10px; text-transform: uppercase; font-weight: 800; margin-left: 5px; }
+.tag.portero { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+.tag.defensa { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+.tag.delantero { background: rgba(239, 68, 68, 0.2); color: #f87171; }
 
-  .rating-badge {
-    background: #0f172a; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
-    border-radius: 50%; font-weight: bold; color: var(--accent); border: 2px solid #334155; font-size: 0.9rem;
-  }
+.rating-badge {
+  background: #0f172a; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; font-weight: bold; color: var(--accent); border: 2px solid #334155; font-size: 0.9rem;
+}
 
-  /* RESULTADOS */
-  .option-card { 
-    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 16px; padding: 20px; margin-bottom: 20px; 
-  }
-  .team-columns { display: flex; flex-direction: column; gap: 20px; margin-top: 15px; } 
-  @media (min-width: 768px) { .team-columns { flex-direction: row; } }
+/* RESULTADOS */
+.option-card { 
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 16px; padding: 20px; margin-bottom: 20px; 
+}
+.team-columns { display: flex; flex-direction: column; gap: 20px; margin-top: 15px; } 
+@media (min-width: 768px) { .team-columns { flex-direction: row; } }
 
-  .team-col ul { padding: 0; list-style: none; }
-  .team-col li { 
-    padding: 8px 0; border-bottom: 1px dashed #334155; display:flex; justify-content:space-between; 
-    font-size: 0.9rem; color: #cbd5e1;
-  }
+.team-col ul { padding: 0; list-style: none; }
+.team-col li { 
+  padding: 8px 0; border-bottom: 1px dashed #334155; display:flex; justify-content:space-between; 
+  font-size: 0.9rem; color: #cbd5e1;
+}
 
-  /* CAMPO DE FÚTBOL GRANDE (UNIFICADO) */
-  .field-container { 
-    display: flex; flex-direction: column; align-items: center; gap: 25px; 
-    background: #e2e8f0; padding: 20px; border-radius: 12px; margin-top: 10px;
-  }
-  
-  .full-field {
-    position: relative; width: 320px; height: 600px; 
-    background-color: #369a43;
-    /* Patrón de césped */
-    background-image: 
-      linear-gradient(0deg, transparent 24%, rgba(255,255,255,.1) 25%, rgba(255,255,255,.1) 26%, transparent 27%, transparent 74%, rgba(255,255,255,.1) 75%, rgba(255,255,255,.1) 76%, transparent 77%, transparent),
-      repeating-linear-gradient(0deg, rgba(0,0,0,0.05) 0px, rgba(0,0,0,0.05) 50px, transparent 50px, transparent 100px);
-    border: 6px solid #fff; border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3); overflow: hidden; user-select: none;
-  }
+/* CAMPO DE FÚTBOL GRANDE (UNIFICADO) */
+.field-container { 
+  display: flex; flex-direction: column; align-items: center; gap: 25px; 
+  background: #e2e8f0; padding: 20px; border-radius: 12px; margin-top: 10px;
+}
+ 
+.full-field {
+  position: relative; width: 320px; height: 600px; 
+  background-color: #369a43;
+  /* Patrón de césped */
+  background-image: 
+    linear-gradient(0deg, transparent 24%, rgba(255,255,255,.1) 25%, rgba(255,255,255,.1) 26%, transparent 27%, transparent 74%, rgba(255,255,255,.1) 75%, rgba(255,255,255,.1) 76%, transparent 77%, transparent),
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.05) 0px, rgba(0,0,0,0.05) 50px, transparent 50px, transparent 100px);
+  border: 6px solid #fff; border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3); overflow: hidden; user-select: none;
+}
 
-  /* LÍNEAS DEL CAMPO GRANDE */
-  .field-line-center { position: absolute; top: 50%; left: 0; width: 100%; height: 3px; background: rgba(255,255,255,0.8); }
-  .field-circle { position: absolute; top: 50%; left: 50%; width: 70px; height: 70px; border: 3px solid rgba(255,255,255,0.8); border-radius: 50%; transform: translate(-50%, -50%); }
-  
-  /* Áreas de 7v7 */
-  .area-A { position: absolute; bottom: 0; left: 50%; width: 140px; height: 60px; border: 3px solid rgba(255,255,255,0.8); border-bottom: none; transform: translateX(-50%); background: rgba(255,255,255,0.1); }
-  .area-B { position: absolute; top: 0; left: 50%; width: 140px; height: 60px; border: 3px solid rgba(255,255,255,0.8); border-top: none; transform: translateX(-50%); background: rgba(255,255,255,0.1); }
+/* LÍNEAS DEL CAMPO GRANDE */
+.field-line-center { position: absolute; top: 50%; left: 0; width: 100%; height: 3px; background: rgba(255,255,255,0.8); }
+.field-circle { position: absolute; top: 50%; left: 50%; width: 70px; height: 70px; border: 3px solid rgba(255,255,255,0.8); border-radius: 50%; transform: translate(-50%, -50%); }
+ 
+/* Áreas de 7v7 */
+.area-A { position: absolute; bottom: 0; left: 50%; width: 140px; height: 60px; border: 3px solid rgba(255,255,255,0.8); border-bottom: none; transform: translateX(-50%); background: rgba(255,255,255,0.1); }
+.area-B { position: absolute; top: 0; left: 50%; width: 140px; height: 60px; border: 3px solid rgba(255,255,255,0.8); border-top: none; transform: translateX(-50%); background: rgba(255,255,255,0.1); }
 
 
-  /* FICHAS JUGADORES */
-  .player-token {
-    position: absolute; width: 42px; height: 42px; border-radius: 50%; 
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Kanit', sans-serif; font-size: 13px; font-weight: 800; 
-    cursor: grab; z-index: 10; touch-action: none; 
-    box-shadow: 0 4px 6px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.3);
-    transition: transform 0.1s;
-  }
-  .player-token:active { cursor: grabbing; transform: scale(1.2); z-index: 100; }
-  
-  .token-black { background: radial-gradient(circle at 30% 30%, #374151, #111827); color: #fff; border: 2px solid #fff; }
-  .token-white { background: radial-gradient(circle at 30% 30%, #fff, #e5e7eb); color: #111827; border: 2px solid #111827; }
+/* FICHAS JUGADORES */
+.player-token {
+  position: absolute; width: 42px; height: 42px; border-radius: 50%; 
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Kanit', sans-serif; font-size: 13px; font-weight: 800; 
+  cursor: grab; z-index: 10; touch-action: none; 
+  box-shadow: 0 4px 6px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.3);
+  transition: transform 0.1s;
+}
+.player-token:active { cursor: grabbing; transform: scale(1.2); z-index: 100; }
+ 
+.token-black { background: radial-gradient(circle at 30% 30%, #374151, #111827); color: #fff; border: 2px solid #fff; }
+.token-white { background: radial-gradient(circle at 30% 30%, #fff, #e5e7eb); color: #111827; border: 2px solid #111827; }
 
-  .player-label {
-    position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%);
-    background: rgba(0,0,0,0.85); color: #fff; padding: 2px 8px; border-radius: 8px;
-    font-size: 10px; white-space: nowrap; font-weight: 600; pointer-events: none;
-  }
+.player-label {
+  position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.85); color: #fff; padding: 2px 8px; border-radius: 8px;
+  font-size: 10px; white-space: nowrap; font-weight: 600; pointer-events: none;
+}
 
-  .hidden { display: none !important; }
-  .error-msg { background: rgba(239,68,68,0.2); color: #fca5a5; padding: 12px; border-radius: 8px; border: 1px solid rgba(239,68,68,0.4); margin-top: 10px; display: none; text-align: center; }
-  .sticky-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-  .btn-group { display: flex; gap: 8px; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.hidden { display: none !important; }
+.error-msg { background: rgba(239,68,68,0.2); color: #fca5a5; padding: 12px; border-radius: 8px; border: 1px solid rgba(239,68,68,0.4); margin-top: 10px; display: none; text-align: center; }
+.sticky-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.btn-group { display: flex; gap: 8px; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 </head>
 <body>
@@ -206,10 +207,43 @@
   <div id="authMsg" style="margin-top:15px; font-size:0.8rem; min-height:20px;"></div>
 </div>
 
+<div class="box hidden" id="playerLobby" style="text-align: center; border: 1px solid var(--accent);">
+  <h2 style="color: var(--accent);">⚽ Confirmar Asistencia</h2>
+  <p id="lobbyStatus" style="font-size:0.9rem;">Introduce tu código de jugador y el Míster te reconocerá.</p>
+  
+  <div id="playerAuthForm">
+    <input id="playerCodeInput" placeholder="Tu Código (Ej. LAMN87)" style="text-align:center;">
+    <button id="btnAuthPlayer" class="secondary" style="margin-top:5px;">🔍 Buscar Ficha</button>
+
+    <div id="playerFound" class="hidden" style="margin-top:15px; background:rgba(163, 230, 53, 0.1); padding:15px; border-radius:12px;">
+      <p style="color:#0f172a;">👋 ¡Hola, <strong id="foundPlayerName" style="color:#1e293b;">Jugador</strong>!</p>
+      <p style="font-size:0.8rem; color:#0f172a;">Posición: <strong id="foundPlayerPos">N/A</strong>. Media: <strong id="foundPlayerRating">N/A</strong>.</p>
+      <button id="btnConfirmAttendance" class="primary" style="background: var(--accent); color: #000; font-size:1.1rem; margin-top:10px;">✅ ¡Confirmo Asistencia!</button>
+    </div>
+  </div>
+
+  <div id="waitingScreen" class="hidden">
+    <h3>✅ Estás dentro</h3>
+    <p>Esperando la alineación del Míster...</p>
+    <div class="field-container" style="height: 200px; justify-content:center;">
+       <div class="rating-badge" style="width:60px; height:60px; font-size:1.5rem; border-color:var(--accent);">⚽</div>
+    </div>
+  </div>
+</div>
+
+
 <div id="appContent" class="hidden">
+  
+  <div class="box" style="background: linear-gradient(45deg, #1e293b, #0f172a); border: 1px solid var(--whatsapp);">
+      <h3 style="color: var(--whatsapp); margin:0;">📡 Partido en Vivo</h3>
+      <p style="font-size:0.8rem; color:#94a3b8;">Crea un enlace para que los jugadores se apunten solos. Usa los jugadores de la lista de abajo.</p>
+      <button id="btnStartLive" class="whatsapp">🔗 Crear Sala & Copiar Link</button>
+      <p id="liveLinkMsg" style="font-size:0.8rem; color:var(--accent); display:none; margin-top:10px;">¡Enlace copiado! Esperando jugadores...</p>
+  </div>
   
   <div class="box">
     <h2>👤 Nuevo Fichaje</h2>
+    <p style="font-size:0.85rem; color:var(--text-muted);">El código se genera automáticamente.</p>
     <div class="row-inputs">
       <input id="playerName" placeholder="Nombre (ej. Lamine)" style="flex: 2;">
       <input id="playerSkill" type="number" placeholder="Nota" inputmode="decimal" step="0.1" style="flex: 1; text-align:center;">
@@ -277,6 +311,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let allPlayers = [];
   let currentUser = null;
+  let currentMatchId = null; // ID del partido live
+  let activePlayerId = null; // ID del jugador logueado (modo jugador)
+  let activePlayerData = null; // Ficha del jugador
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const matchLinkID = urlParams.get('match_id'); // Parámetro en la URL para el modo jugador
 
   // --- ELEMENTOS ---
   const authBox = document.getElementById('authBox');
@@ -285,7 +325,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const playersListEl = document.getElementById('playersList');
   const generateError = document.getElementById('generateError');
   const btnShare = document.getElementById('btnShareWhatsapp');
-  const fullField = document.getElementById('fullField'); 
+  const fullField = document.getElementById('fullField'); // Campo del míster
+
+  // ELEMENTOS NUEVOS (Player)
+  const playerLobby = document.getElementById('playerLobby');
+  const playerCodeInput = document.getElementById('playerCodeInput');
+  const btnAuthPlayer = document.getElementById('btnAuthPlayer');
+  const btnConfirmAttendance = document.getElementById('btnConfirmAttendance');
+  
+  // ELEMENTOS NUEVOS (Coach)
+  const btnStartLive = document.getElementById('btnStartLive');
 
   // --- EVENTOS ---
   document.getElementById('btnRegister').addEventListener('click', () => handleAuth('signup'));
@@ -296,11 +345,42 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnDeselectAll').addEventListener('click', deselectAllPlayers);
   btnShare.addEventListener('click', shareFieldsImage);
 
+  // NUEVOS EVENTOS LIVE
+  if(btnStartLive) btnStartLive.addEventListener('click', createLiveMatch);
+  if(btnAuthPlayer) btnAuthPlayer.addEventListener('click', searchPlayerByCode);
+  if(btnConfirmAttendance) btnConfirmAttendance.addEventListener('click', confirmAttendance);
+  
+  // --- INICIALIZACIÓN: MODO COACH o MODO JUGADOR ---
+  if (matchLinkID) {
+      // MODO JUGADOR: Si hay ID en la URL
+      authBox.style.display = 'none';
+      appContent.style.display = 'none';
+      playerLobby.classList.remove('hidden');
+      currentMatchId = matchLinkID;
+      listenToMatchStatus();
+  } else {
+      // MODO ENTRENADOR: Comportamiento normal (se inicializa después del login)
+      supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session) {
+              currentUser = session.user;
+              initApp();
+          }
+      });
+  }
+
   // --- FUNCIONES UTILIDAD ---
   function selectAllPlayers() { document.querySelectorAll('.p-select').forEach(c => c.checked = true); }
   function deselectAllPlayers() { document.querySelectorAll('.p-select').forEach(c => c.checked = false); } 
+  function showMsg(txt) { authMsg.textContent = txt; }
   
-  // --- AUTH ---
+  function generatePlayerCode(name) {
+      const cleanName = name.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+      const shortName = cleanName.substring(0, Math.min(cleanName.length, 4));
+      const randomNum = Math.floor(10 + Math.random() * 89);
+      return `${shortName}${randomNum}`;
+  }
+  
+  // --- AUTH (COACH) ---
   async function handleAuth(type) { 
     const email = document.getElementById('authEmail').value.trim();
     const password = document.getElementById('authPassword').value;
@@ -320,10 +400,9 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(initApp, 500);
     }
   }
-  function showMsg(txt) { authMsg.textContent = txt; }
   async function initApp() { authBox.style.display = 'none'; appContent.classList.remove('hidden'); await loadPlayers(); }
 
-  // --- JUGADORES Y LISTA ---
+  // --- JUGADORES Y LISTA (COACH) ---
   async function loadPlayers() { 
     if (!currentUser) return;
     const { data } = await supabase.from('players').select('*').eq('user_id', currentUser.id);
@@ -331,7 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderList();
   }
 
-  // AÑADIR JUGADOR
+  // AÑADIR JUGADOR (CON CÓDIGO)
   async function addPlayer() { 
     const nameIn = document.getElementById('playerName');
     const skillIn = document.getElementById('playerSkill');
@@ -343,7 +422,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!name || !rating) return alert('Datos incompletos');
     
-    const newPlayer = { user_id: currentUser.id, name, position, rating };
+    const playerCode = generatePlayerCode(name); // <-- Nuevo código
+    const newPlayer = { user_id: currentUser.id, name, position, rating, player_code: playerCode };
 
     // 1. Insertar en Supabase
     const { data, error } = await supabase.from('players').insert([newPlayer]).select();
@@ -365,13 +445,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ELIMINAR JUGADOR (CORREGIDO PARA UUID)
+  // ELIMINAR JUGADOR
   async function deletePlayer(playerId) {
       if (!playerId) return;
 
       if (!confirm("¿Eliminar jugador de la plantilla?")) return;
 
-      // Importante: Tratamos ID como String
       const { error } = await supabase.from('players').delete().eq('id', String(playerId));
 
       if (error) {
@@ -380,11 +459,11 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
       }
 
-      // Eliminar de lista local usando comparación de Strings
       allPlayers = allPlayers.filter(p => String(p.id) !== String(playerId));
       renderList();
   }
 
+  // RENDERIZAR LISTA (MOSTRANDO CÓDIGO)
   function renderList() { 
     playersListEl.innerHTML = '';
     document.getElementById('playerCount').textContent = `(${allPlayers.length})`;
@@ -400,8 +479,9 @@ document.addEventListener('DOMContentLoaded', () => {
         <div style="display:flex; align-items:center;">
           <input type="checkbox" class="p-select" checked value="${p.id}" ${isDisabled ? 'disabled' : ''}>
           <div>
-             <span style="font-weight:600; font-size:1rem; color:#f1f5f9;">${p.name}</span>
-             <span class="tag ${p.position}">${p.position}</span>
+              <span style="font-weight:600; font-size:1rem; color:#f1f5f9;">${p.name}</span>
+              <span class="tag ${p.position}">${p.position}</span>
+              <span class="tag" style="background:#334155; color:var(--accent); margin-left:10px; font-size:11px;">CÓDIGO: ${p.player_code || 'N/A'}</span>
           </div>
         </div>
         <div style="display:flex; align-items:center; gap: 10px;">
@@ -424,15 +504,60 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- GENERACIÓN DE EQUIPOS (CORREGIDA UUID) ---
+  // --- MODO ENTRENADOR LIVE ---
+  async function createLiveMatch() {
+    if (!currentUser) return alert("Inicia sesión primero");
+
+    // 1. Crear partido en BBDD
+    const { data, error } = await supabase
+        .from('matches')
+        .insert([{ coach_id: currentUser.id, status: 'waiting' }])
+        .select()
+        .single();
+
+    if (error) return alert("Error creando sala");
+
+    currentMatchId = data.id;
+    
+    // 2. Generar Link
+    const link = `${window.location.origin}${window.location.pathname}?match_id=${currentMatchId}`;
+    
+    // 3. Copiar al portapapeles
+    navigator.clipboard.writeText(link).then(() => {
+        document.getElementById('liveLinkMsg').style.display = 'block';
+        document.getElementById('liveLinkMsg').textContent = "Link copiado: " + link;
+    });
+
+    // 4. Limpiar lista actual y poner modo escucha
+    allPlayers = []; 
+    renderList();
+    
+    // 5. Suscribirse a nuevos jugadores en tiempo real (por ID)
+    supabase
+    .channel('room1')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'match_participants', filter: `match_id=eq.${currentMatchId}` }, async payload => {
+        // Buscamos la ficha completa del jugador que acaba de confirmar
+        const { data: playerDetails } = await supabase.from('players').select('*').eq('id', payload.new.player_id).single();
+        if(playerDetails) {
+            // Revisa si ya está en la lista (para evitar duplicados por errores de tiempo real)
+            if (!allPlayers.find(p => p.id === playerDetails.id)) {
+                allPlayers.push(playerDetails); 
+                renderList();
+            }
+        }
+    })
+    .subscribe();
+    
+    alert("¡Sala creada! Manda el link por WhatsApp. Los jugadores irán apareciendo en la lista automáticamente.");
+  }
+
+  // --- GENERACIÓN DE EQUIPOS (COACH) Y ENVÍO DEL RESULTADO ---
   function generateTeamOptions() { 
     generateError.style.display = 'none';
     const checks = document.querySelectorAll('.p-select:checked');
     
-    // CORRECCIÓN: Usamos String directamente, sin parseInt
     const selectedIds = Array.from(checks).map(c => c.value);
     
-    // Comparación segura string vs string
     const pool = allPlayers.filter(p => selectedIds.includes(String(p.id)));
 
     if (pool.length < 14) { showError('Selecciona al menos 14 jugadores para 7vs7.'); return; }
@@ -449,7 +574,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const attempt = createStrictMatch(pool);
         if(!attempt) continue;
         
-        // CORRECCIÓN: Hash usando Strings
         const idsA = attempt.teamA.map(p => String(p.id)).sort().join('-');
         const idsB = attempt.teamB.map(p => String(p.id)).sort().join('-');
         const hash = [idsA, idsB].sort().join('::');
@@ -464,6 +588,20 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (top3.length === 0) { showError("Error generando combinaciones."); return; }
     displayOptions(top3);
+
+    // ENVIAR RESULTADO A LA BASE DE DATOS (¡NUEVO!)
+    if (currentMatchId && top3.length > 0) {
+        const bestOption = top3[0];
+        
+        supabase
+            .from('matches')
+            .update({ 
+                status: 'finished', 
+                teams_result: bestOption 
+            })
+            .eq('id', currentMatchId)
+            .then(() => console.log("Resultado enviado a jugadores en tiempo real."));
+    }
   }
 
   function showError(msg) { generateError.textContent = msg; generateError.style.display = 'block'; }
@@ -475,9 +613,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const teamA = []; const teamB = [];
 
-    teamA.push(gks.pop()); teamB.push(gks.pop());           
+    teamA.push(gks.pop()); teamB.push(gks.pop());            
     for(let k=0;k<3;k++) { teamA.push(defs.pop()); teamB.push(defs.pop()); } 
-    teamA.push(fwds.pop()); teamB.push(fwds.pop());        
+    teamA.push(fwds.pop()); teamB.push(fwds.pop());             
 
     let leftovers = [...gks, ...defs, ...fwds]; 
     leftovers = shuffle(leftovers);
@@ -517,8 +655,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             fullField.querySelectorAll('.player-token').forEach(e => e.remove());
             
-            drawTeamOnUnifiedField(opt.teamA, 'token-black', 'bottom'); 
-            drawTeamOnUnifiedField(opt.teamB, 'token-white', 'top');    
+            drawTeamOnUnifiedField(opt.teamA, 'token-black', 'bottom', fullField); // Se pasa fullField
+            drawTeamOnUnifiedField(opt.teamB, 'token-white', 'top', fullField);   // Se pasa fullField
 
             setTimeout(() => { document.getElementById('fieldSection').scrollIntoView({behavior: "smooth"}); }, 100);
         });
@@ -530,14 +668,119 @@ document.addEventListener('DOMContentLoaded', () => {
     return [...t].sort((a,b)=>order[a.position]-order[b.position]).map(p=>`<li><span>${p.name}</span><span style="font-size:0.7rem;opacity:0.7;">${p.position.substring(0,3).toUpperCase()}</span></li>`).join('');
   }
 
-  // --- PIZARRA TÁCTICA ---
-  function drawTeamOnUnifiedField(team, colorClass, half) {
+
+  // --- MODO JUGADOR: AUTENTICACIÓN Y ASISTENCIA (¡NUEVO!) ---
+  async function searchPlayerByCode() {
+      const code = playerCodeInput.value.trim().toUpperCase();
+      if (!code) return alert("Introduce tu código de jugador.");
+
+      const { data, error } = await supabase
+          .from('players')
+          .select('*')
+          .eq('player_code', code)
+          .single();
+
+      if (error || !data) {
+          document.getElementById('playerFound').classList.add('hidden');
+          return alert("Código no encontrado. Revisa tu código.");
+      }
+
+      // Jugador encontrado. Guardamos su ficha.
+      activePlayerData = data;
+      activePlayerId = data.id;
+
+      document.getElementById('foundPlayerName').textContent = data.name;
+      document.getElementById('foundPlayerPos').textContent = data.position;
+      document.getElementById('foundPlayerRating').textContent = data.rating;
+      document.getElementById('playerFound').classList.remove('hidden');
+      playerCodeInput.disabled = true;
+      btnAuthPlayer.disabled = true;
+  }
+
+  async function confirmAttendance() {
+      if (!activePlayerId || !currentMatchId) return alert("Error: Falta el código de partido o tu código de jugador.");
+      
+      const { error } = await supabase
+          .from('match_participants')
+          .insert([{ 
+              match_id: currentMatchId, 
+              player_id: activePlayerId,
+              name: activePlayerData.name // Nombre para lista rápida del míster
+          }]);
+
+      if(error && error.code !== '23505') { 
+          console.error(error);
+          alert("Error al confirmar asistencia. Ya estabas dentro o revisa la consola.");
+      } else {
+          document.getElementById('playerAuthForm').classList.add('hidden');
+          document.getElementById('waitingScreen').classList.remove('hidden');
+          document.getElementById('lobbyStatus').textContent = "✅ Asistencia Confirmada. Esperando alineación del Míster.";
+      }
+  }
+
+  function listenToMatchStatus() {
+      // El jugador escucha cambios en la tabla 'matches' para ver el resultado
+      supabase
+      .channel('match-updates')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'matches', filter: `id=eq.${currentMatchId}` }, payload => {
+          const matchData = payload.new;
+          if (matchData.status === 'finished' && matchData.teams_result) {
+              // ¡EL MÍSTER HA HECHO LOS EQUIPOS!
+              showPlayerResult(matchData.teams_result);
+          }
+      })
+      .subscribe();
+  }
+
+  function showPlayerResult(resultData) {
+      // Ocultar lobby y mostrar campo (el coach content tiene que estar visible para usar la función de pizarra)
+      playerLobby.style.display = 'none';
+      appContent.classList.remove('hidden');
+      
+      // Ocultar paneles de administración para el jugador
+      document.querySelectorAll('.box').forEach(b => {
+         if(b.id !== 'fieldSection') b.style.display = 'none';
+      });
+      
+      // Mostrar campo y pintar fichas
+      const fieldSection = document.getElementById('fieldSection');
+      fieldSection.classList.remove('hidden');
+      fieldSection.style.display = 'block';
+      
+      const fieldPlaceholder = document.getElementById('fullField');
+      
+      // Limpiar y dibujar
+      fieldPlaceholder.querySelectorAll('.player-token').forEach(e => e.remove());
+      drawTeamOnUnifiedField(resultData.teams_result.teamA, 'token-black', 'bottom', fieldPlaceholder);
+      drawTeamOnUnifiedField(resultData.teams_result.teamB, 'token-white', 'top', fieldPlaceholder);
+      
+      // Determinar equipo
+      const isInTeamA = resultData.teams_result.teamA.some(p => p.id === activePlayerId);
+      const isInTeamB = resultData.teams_result.teamB.some(p => p.id === activePlayerId);
+
+      let teamColor = 'SUPLENTE (no convocado)';
+      if (isInTeamA) { teamColor = 'NEGRO'; }
+      else if (isInTeamB) { teamColor = 'BLANCO'; }
+      
+      // Mostrar mensaje de resultado
+      const resultMessage = document.createElement('h3');
+      resultMessage.style.textAlign = 'center';
+      resultMessage.style.color = teamColor === 'NEGRO' ? '#334155' : (teamColor === 'BLANCO' ? '#f1f5f9' : '#94a3b8');
+      resultMessage.textContent = `¡Estás en el EQUIPO ${teamColor}!`;
+      fieldPlaceholder.before(resultMessage);
+      
+      fieldSection.scrollIntoView({behavior: "smooth"});
+  }
+
+
+  // --- PIZARRA TÁCTICA (MODIFICADA PARA ACEPTAR CAMPO DESTINO) ---
+  function drawTeamOnUnifiedField(team, colorClass, half, targetField) { // Acepta targetField
     const isBottomHalf = half === 'bottom';
     
     // Coordenadas fijas OBLIGATORIAS (Esqueleto 1-3-1)
     const coordsFixed = {
-        portero:   [{x:140, y: isBottomHalf ? 520 : 40}], 
-        defensa:   [
+        portero:    [{x:140, y: isBottomHalf ? 520 : 40}], 
+        defensa:    [
             {x:50, y: isBottomHalf ? 450 : 100}, 
             {x:140, y: isBottomHalf ? 450 : 100}, 
             {x:230, y: isBottomHalf ? 450 : 100}
@@ -576,24 +819,38 @@ document.addEventListener('DOMContentLoaded', () => {
             pos = {x: 60 + Math.random() * 200, y: yCenter};
         }
         
-        createToken(p, fullField, colorClass, pos.x, pos.y);
+        // Se pasa targetField en lugar de fullField
+        createToken(p, targetField, colorClass, pos.x, pos.y); 
     });
   }
 
+  // FUNCIÓN createToken
   function createToken(p, div, cls, x, y) {
     const el = document.createElement('div');
     el.className = `player-token ${cls}`;
     el.textContent = p.name.substring(0,2).toUpperCase();
     el.style.left = x+'px'; el.style.top = y+'px';
+    
+    // Si el modo es jugador y es el jugador activo, resalta su ficha
+    if (matchLinkID && String(p.id) === activePlayerId) {
+        el.style.boxShadow = '0 0 10px 5px var(--accent)';
+    }
+
     const l = document.createElement('div'); l.className='player-label'; l.textContent=p.name;
     el.appendChild(l);
     
-    el.addEventListener('mousedown', startDrag);
-    el.addEventListener('touchstart', startDrag, {passive: false});
+    // Solo permitimos arrastrar en el modo entrenador (si es el fullField original)
+    if (div === fullField) {
+        el.addEventListener('mousedown', startDrag);
+        el.addEventListener('touchstart', startDrag, {passive: false});
+    } else {
+        el.style.cursor = 'default';
+    }
+
     div.appendChild(el);
   }
 
-  // Lógica Drag & Drop
+  // Lógica Drag & Drop (Sin cambios)
   let activeItem = null; let activeContainer = null;
   let initialX, initialY, xOffset = 0, yOffset = 0;
 
