@@ -10,8 +10,6 @@
 <link rel="apple-touch-icon" href="icono.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" sizes="180x180" href="icono.png">
-<link rel="icon" sizes="192x192" href="icono.png">
 <link rel="manifest" href="/manifest.json">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,7 +20,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-/* --- ESTILOS --- */
+/* --- ESTILOS GENERALES --- */
 :root { 
   --bg-dark: #0f172a;
   --bg-card: rgba(30, 41, 59, 0.7);
@@ -105,32 +103,21 @@ button.outline {
   background: transparent; border: 1px solid var(--primary); color: var(--primary); 
   font-size: 0.8rem; padding: 6px 12px; width: auto; margin: 0;
 }
-/* Estilo para el botón de selección */
-button.select-btn.selected { 
-    background: var(--accent); 
-    color: #000; 
-    border: 1px solid var(--accent);
-}
+button.select-btn.selected { background: var(--accent); color: #000; border: 1px solid var(--accent); }
 
-/* LISTAS */
+/* LISTAS Y TARJETAS */
 .player-row { 
   display: flex; justify-content: space-between; align-items: center; 
   padding: 12px; margin-bottom: 8px; background: rgba(255,255,255,0.03); 
   border-radius: 10px; border: 1px solid transparent;
 }
 .p-select { width: 22px; height: 22px; margin-right: 12px; accent-color: var(--accent); }
- 
 .tag { padding: 4px 8px; border-radius: 4px; font-size: 10px; text-transform: uppercase; font-weight: 800; margin-left: 5px; }
 .tag.portero { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
 .tag.defensa { background: rgba(16, 185, 129, 0.2); color: #34d399; }
 .tag.delantero { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+.rating-badge { background: #0f172a; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; color: var(--accent); border: 2px solid #334155; font-size: 0.9rem; }
 
-.rating-badge {
-  background: #0f172a; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
-  border-radius: 50%; font-weight: bold; color: var(--accent); border: 2px solid #334155; font-size: 0.9rem;
-}
-
-/* RESULTADOS */
 .option-card { 
   background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05);
   border-radius: 16px; padding: 20px; margin-bottom: 20px; 
@@ -138,50 +125,41 @@ button.select-btn.selected {
 }
 .team-columns { display: flex; flex-direction: column; gap: 20px; margin-top: 15px; } 
 @media (min-width: 768px) { .team-columns { flex-direction: row; } }
-
 .team-col ul { padding: 0; list-style: none; }
-.team-col li { 
-  padding: 8px 0; border-bottom: 1px dashed #334155; display:flex; justify-content:space-between; 
-  font-size: 0.9rem; color: #cbd5e1;
-}
+.team-col li { padding: 8px 0; border-bottom: 1px dashed #334155; display:flex; justify-content:space-between; font-size: 0.9rem; color: #cbd5e1; }
 
 /* CAMPO DE FÚTBOL */
-.field-container { 
-  display: flex; flex-direction: column; align-items: center; gap: 25px; 
-  background: #e2e8f0; padding: 20px; border-radius: 12px; margin-top: 10px;
-}
- 
+.field-container { display: flex; flex-direction: column; align-items: center; gap: 25px; background: #e2e8f0; padding: 20px; border-radius: 12px; margin-top: 10px; }
 .full-field {
-  position: relative; width: 320px; height: 600px; 
-  background-color: #369a43;
-  background-image: 
-    linear-gradient(0deg, transparent 24%, rgba(255,255,255,.1) 25%, rgba(255,255,255,.1) 26%, transparent 27%, transparent 74%, rgba(255,255,255,.1) 75%, rgba(255,255,255,.1) 76%, transparent 77%, transparent),
-    repeating-linear-gradient(0deg, rgba(0,0,0,0.05) 0px, rgba(0,0,0,0.05) 50px, transparent 50px, transparent 100px);
-  border: 6px solid #fff; border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.3); overflow: hidden; user-select: none;
+  position: relative; width: 320px; height: 600px; background-color: #369a43;
+  background-image: linear-gradient(0deg, transparent 24%, rgba(255,255,255,.1) 25%, rgba(255,255,255,.1) 26%, transparent 27%, transparent 74%, rgba(255,255,255,.1) 75%, rgba(255,255,255,.1) 76%, transparent 77%, transparent), repeating-linear-gradient(0deg, rgba(0,0,0,0.05) 0px, rgba(0,0,0,0.05) 50px, transparent 50px, transparent 100px);
+  border: 6px solid #fff; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); overflow: hidden; user-select: none;
 }
-
 .field-line-center { position: absolute; top: 50%; left: 0; width: 100%; height: 3px; background: rgba(255,255,255,0.8); }
 .field-circle { position: absolute; top: 50%; left: 50%; width: 70px; height: 70px; border: 3px solid rgba(255,255,255,0.8); border-radius: 50%; transform: translate(-50%, -50%); }
 .area-A { position: absolute; bottom: 0; left: 50%; width: 140px; height: 60px; border: 3px solid rgba(255,255,255,0.8); border-bottom: none; transform: translateX(-50%); background: rgba(255,255,255,0.1); }
 .area-B { position: absolute; top: 0; left: 50%; width: 140px; height: 60px; border: 3px solid rgba(255,255,255,0.8); border-top: none; transform: translateX(-50%); background: rgba(255,255,255,0.1); }
 
 .player-token {
-  position: absolute; width: 42px; height: 42px; border-radius: 50%; 
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Kanit', sans-serif; font-size: 13px; font-weight: 800; 
-  cursor: grab; z-index: 10; touch-action: none; 
-  box-shadow: 0 4px 6px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.3);
-  transition: transform 0.1s;
+  position: absolute; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-family: 'Kanit', sans-serif; font-size: 13px; font-weight: 800; cursor: grab; z-index: 10; touch-action: none; 
+  box-shadow: 0 4px 6px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.3); transition: transform 0.1s;
 }
 .player-token:active { cursor: grabbing; transform: scale(1.2); z-index: 100; }
 .token-black { background: radial-gradient(circle at 30% 30%, #374151, #111827); color: #fff; border: 2px solid #fff; }
 .token-white { background: radial-gradient(circle at 30% 30%, #fff, #e5e7eb); color: #111827; border: 2px solid #111827; }
+.player-label { position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: #fff; padding: 2px 8px; border-radius: 8px; font-size: 10px; white-space: nowrap; font-weight: 600; pointer-events: none; }
 
-.player-label {
-  position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%);
-  background: rgba(0,0,0,0.85); color: #fff; padding: 2px 8px; border-radius: 8px;
-  font-size: 10px; white-space: nowrap; font-weight: 600; pointer-events: none;
+/* MODAL DE CONFIRMACIÓN */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px);
+  display: flex; justify-content: center; align-items: center; z-index: 2000;
+}
+.modal-content {
+  background: #1e293b; border: 1px solid var(--accent);
+  padding: 30px; border-radius: 20px; max-width: 90%; width: 350px; text-align: center;
+  box-shadow: 0 0 30px rgba(163, 230, 53, 0.2); animation: fadeIn 0.2s ease-out;
 }
 
 .hidden { display: none !important; }
@@ -219,9 +197,9 @@ button.select-btn.selected {
     </div>
   </div>
 
-  <div id="votingView" class="hidden">
+  <div id="votingView" class.="hidden">
     <h3 style="color: var(--primary);">Opciones del Míster</h3>
-    <p id="votingHeader" style="font-size:0.85rem; color:var(--text-muted);">¿Cuál crees que es la alineación más justa?</p>
+    <p id="votingHeader" style="font-size:0.85rem; color:var(--text-muted);">Mira como van los votos y elige tu favorita.</p>
     <div id="votingOptionsContainer"></div>
   </div>
 
@@ -230,6 +208,19 @@ button.select-btn.selected {
     <p>Gracias. Esperando que el Míster publique la alineación final...</p>
     <div class="field-container" style="height: 200px; justify-content:center;">
        <div class="rating-badge" style="width:60px; height:60px; font-size:1.5rem; border-color:var(--accent);">🗳️</div>
+    </div>
+  </div>
+</div>
+
+<div id="voteConfirmModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <h3 style="color: var(--accent); margin-top:0;">⚠️ Confirmar Voto</h3>
+    <p style="color: #cbd5e1;">Vas a votar por la <strong id="confirmOptionName" style="color: #fff;">Opción X</strong>.</p>
+    <p style="font-size:0.85rem; color: #94a3b8;">¿Estás seguro? No podrás cambiarlo.</p>
+    
+    <div class="btn-group" style="margin-top:20px;">
+      <button id="btnCancelVote" class="secondary" style="background: transparent; border: 1px solid #64748b; color: #cbd5e1;">Cancelar</button>
+      <button id="btnDoVote" class="primary" style="background: var(--accent); color: #000;">Sí, Votar</button>
     </div>
   </div>
 </div>
@@ -299,25 +290,29 @@ button.select-btn.selected {
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // --- CONFIG ---
+  // --- CONFIGURACIÓN SUPABASE ---
+  // ! CAMBIA ESTOS DATOS POR LOS TUYOS DE SUPABASE
   const SUPABASE_URL = 'https://vayholflhqoyflbvuusa.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheWhvbGZsaHFveWZsYnZ1dXNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNzc5NjcsImV4cCI6MjA3ODY1Mzk2N30.QxD4_XbYlQarPRUcmoQQclw8cCnnzRiHZcYzSsUXGDA' ;
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZayhvbGZsaHFveWZsYnZ1dXNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNzc5NjcsImV4cCI6MjA3ODY1Mzk2N30.QxD4_XbYlQarPRUcmoQQclw8cCnnzRiHZcYzSsUXGDA';
   let supabase;
   try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e) { console.error("Error Supabase", e); }
 
+  // Variables de Estado
   let allPlayers = [];
   let currentUser = null;
   let currentMatchId = null; 
   let activePlayerId = null; 
   let activePlayerData = null; 
+  let allVotes = []; // Guardar votos en vivo
   
   let generatedOptions = []; 
   let selectedVotingOptions = []; 
+  let pendingVoteIndex = null; // Para la confirmación
 
   const urlParams = new URLSearchParams(window.location.search);
   const matchLinkID = urlParams.get('match_id'); 
 
-  // --- ELEMENTOS ---
+  // --- ELEMENTOS DOM ---
   const authBox = document.getElementById('authBox');
   const appContent = document.getElementById('appContent');
   const addPlayerBox = document.getElementById('addPlayerBox'); 
@@ -329,11 +324,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnShare = document.getElementById('btnShareWhatsapp');
   const fullField = document.getElementById('fullField'); 
 
-  // ELEMENTOS JUGADOR
+  // DOM Jugador y Modales
   const playerLobby = document.getElementById('playerLobby');
   const playerCodeInput = document.getElementById('playerCodeInput');
   const btnAuthPlayer = document.getElementById('btnAuthPlayer');
   const btnEnterVoting = document.getElementById('btnEnterVoting'); 
+  
+  // Modal Confirmación
+  const voteConfirmModal = document.getElementById('voteConfirmModal');
+  const btnCancelVote = document.getElementById('btnCancelVote');
+  const btnDoVote = document.getElementById('btnDoVote');
 
   // --- EVENTOS ---
   document.getElementById('btnRegister').addEventListener('click', () => handleAuth('signup'));
@@ -346,6 +346,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if(btnAuthPlayer) btnAuthPlayer.addEventListener('click', searchPlayerByCode);
   if(btnEnterVoting) btnEnterVoting.addEventListener('click', enterVoting); 
+  
+  // Eventos Modal Voto
+  btnCancelVote.addEventListener('click', () => { voteConfirmModal.classList.add('hidden'); pendingVoteIndex = null; });
+  btnDoVote.addEventListener('click', executeVote);
 
   // --- INICIALIZACIÓN ---
   supabase.auth.getSession().then(({ data: { session } }) => {
@@ -361,9 +365,7 @@ document.addEventListener('DOMContentLoaded', () => {
               currentMatchId = matchLinkID;
           }
       } else {
-          if (session) {
-              initApp();
-          }
+          if (session) initApp();
       }
   });
 
@@ -371,15 +373,15 @@ document.addEventListener('DOMContentLoaded', () => {
   function selectAllPlayers() { document.querySelectorAll('.p-select').forEach(c => c.checked = true); }
   function deselectAllPlayers() { document.querySelectorAll('.p-select').forEach(c => c.checked = false); } 
   function showMsg(txt) { authMsg.textContent = txt; }
-  
   function generatePlayerCode(name) {
       const cleanName = name.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
       const shortName = cleanName.substring(0, Math.min(cleanName.length, 4));
       const randomNum = Math.floor(10 + Math.random() * 89);
       return `${shortName}${randomNum}`;
   }
+  function renderListSimple(t) { return [...t].map(p=>`<li><span>${p.name}</span></li>`).join(''); }
   
-  // --- AUTH ---
+  // --- AUTH (COACH) ---
   async function handleAuth(type) { 
     const email = document.getElementById('authEmail').value.trim();
     const password = document.getElementById('authPassword').value;
@@ -413,7 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
       await loadPlayers(); 
   }
 
-  // --- SALA DE CONTROL ---
+  // --- SALA DE CONTROL DEL MÍSTER ---
   async function initCoachControlRoom(matchId) {
     currentMatchId = matchId;
     authBox.style.display = 'none';
@@ -455,7 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- JUGADORES ---
+  // --- JUGADORES Y LISTA (COACH) ---
   async function loadPlayers() { 
     if (!currentUser) return;
     const { data } = await supabase.from('players').select('*').eq('user_id', currentUser.id);
@@ -472,29 +474,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const position = posIn.value;
 
     if (!name || !rating) return alert('Datos incompletos');
-    
     const playerCode = generatePlayerCode(name); 
     const newPlayer = { user_id: currentUser.id, name, position, rating, player_code: playerCode };
-
     const { data, error } = await supabase.from('players').insert([newPlayer]).select();
     
-    if (error) {
-        console.error('Error:', error);
-        alert('Error al guardar el jugador.');
-        return;
-    }
-    
-    if(data && data.length) {
-        allPlayers.push(data[0]); 
-        nameIn.value = ''; 
-        skillIn.value = '';
-        renderList();
-    }
+    if (error) { console.error(error); return alert('Error al guardar.'); }
+    if(data && data.length) { allPlayers.push(data[0]); nameIn.value = ''; skillIn.value = ''; renderList(); }
   }
 
   async function deletePlayer(playerId) {
-      if (!playerId) return;
-      if (!confirm("¿Eliminar jugador?")) return;
+      if (!playerId || !confirm("¿Eliminar jugador?")) return;
       const { error } = await supabase.from('players').delete().eq('id', String(playerId));
       if (error) return alert('Error al eliminar.');
       allPlayers = allPlayers.filter(p => String(p.id) !== String(playerId));
@@ -508,7 +497,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     [...allPlayers].sort((a,b) => order[a.position] - order[b.position] || b.rating - a.rating).forEach(p => {
       const playerId = p.id; 
-      
       const div = document.createElement('div');
       div.className = 'player-row';
       div.innerHTML = `
@@ -527,12 +515,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
       playersListEl.appendChild(div);
     });
-
-    document.querySelectorAll('.delete-btn').forEach(button => {
-        button.addEventListener('click', (e) => {
-            deletePlayer(e.currentTarget.dataset.id);
-        });
-    });
+    document.querySelectorAll('.delete-btn').forEach(button => button.addEventListener('click', (e) => deletePlayer(e.currentTarget.dataset.id)));
   }
 
   // --- GENERACIÓN Y SELECCIÓN ---
@@ -542,9 +525,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectedIds = Array.from(checks).map(c => c.value);
     const pool = allPlayers.filter(p => selectedIds.includes(String(p.id)));
 
-    if (pool.length < 14) { showError('Selecciona al menos 14 jugadores para 7vs7.'); return; }
+    if (pool.length < 14) { showError('Selecciona al menos 14 jugadores.'); return; }
     
-    // Lógica simplificada para generar:
     let variations = [];
     for(let i=0; i<500; i++) { 
         const attempt = createStrictMatch(pool);
@@ -553,7 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
     variations.sort((a, b) => a.diff - b.diff); 
     generatedOptions = variations.slice(0, 5); 
 
-    if (generatedOptions.length === 0) { showError("Error generando combinaciones."); return; }
+    if (generatedOptions.length === 0) { showError("Error generando."); return; }
     
     selectedVotingOptions = []; 
     displayOptionsForSelection(generatedOptions); 
@@ -567,7 +549,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const gks = shuffle(originalPool.filter(p => p.position === 'portero'));
     const defs = shuffle(originalPool.filter(p => p.position === 'defensa'));
     const fwds = shuffle(originalPool.filter(p => p.position === 'delantero'));
-    // Validar mínimos
     if(gks.length < 2 || defs.length < 6 || fwds.length < 2) return null;
 
     const teamA = []; const teamB = [];
@@ -724,7 +705,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
 
-  let allVotes = [];
+  // --- VOTOS EN TIEMPO REAL ---
   function listenToVotes() {
       supabase.removeChannel(supabase.channel('vote-room'));
       supabase.channel('vote-room')
@@ -740,20 +721,36 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function updateVoteDisplay() {
-      const voteCounts = {};
-      // selectedVotingOptions ahora son [0, 1, 2] en la sala de control
-      [0,1,2].forEach(index => voteCounts[index] = 0);
+      // ESTA FUNCIÓN SE USA TANTO EN COACH COMO EN PLAYER
+      const voteCounts = { 0: 0, 1: 0, 2: 0 };
+      let totalVotes = 0;
+
       allVotes.forEach(vote => {
           const idx = parseInt(vote.option_index);
-          if (idx >= 0 && idx <= 2) voteCounts[idx]++;
+          if (idx >= 0 && idx <= 2) {
+              voteCounts[idx]++;
+              totalVotes++;
+          }
       });
       
-      const totalVotes = allVotes.length;
       [0,1,2].forEach(index => {
           const votes = voteCounts[index] || 0;
           const percentage = totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : 0;
+          
           const card = document.getElementById(`option-card-${index}`);
-          if (card) card.querySelector('.vote-status').innerHTML = `Votos: ${votes} (${percentage}%)`;
+          if (card) {
+              // Verificar si existe el elemento .vote-status, si no crearlo (para players)
+              let voteEl = card.querySelector('.vote-status');
+              if (!voteEl) {
+                  voteEl = document.createElement('p');
+                  voteEl.className = 'vote-status';
+                  voteEl.style.cssText = "margin:10px 0; font-weight:bold; color:var(--accent); font-size:0.9rem;";
+                  // Insertar antes del botón o columnas
+                  const ref = card.querySelector('.team-columns') || card.querySelector('button');
+                  if(ref) card.insertBefore(voteEl, ref);
+              }
+              voteEl.innerHTML = `🗳️ Votos: ${votes} (${percentage}%)`;
+          }
       });
   }
 
@@ -777,16 +774,11 @@ document.addEventListener('DOMContentLoaded', () => {
       showPlayerResult(winningOption, true); 
   }
 
-  function renderListSimple(t) {
-    return [...t].map(p=>`<li><span>${p.name}</span></li>`).join('');
-  }
-
-  // --- MODO JUGADOR: BÚSQUEDA SEGURA ---
+  // --- MODO JUGADOR: BÚSQUEDA Y VOTO ---
   async function searchPlayerByCode() {
       const codeIn = document.getElementById('playerCodeInput').value.trim();
       if (!codeIn) return alert("Pon tu código.");
 
-      // 🌟 USO DE RPC PARA EVITAR ERRORES RLS 406/500
       const { data, error } = await supabase.rpc('get_player_by_code', { code_input: codeIn });
 
       if (error) { console.error(error); return alert("Error buscando código."); }
@@ -806,7 +798,8 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('votingView').classList.remove('hidden');
       document.getElementById('lobbyStatus').textContent = "Vota tu favorita.";
       await fetchVotingOptions();
-      listenToMatchStatus();
+      listenToMatchStatus(true); // Escuchar estado del partido
+      listenToVotes(); // Escuchar votos en tiempo real (NUEVO PARA JUGADOR)
   }
 
   async function fetchVotingOptions() {
@@ -814,7 +807,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data && data.status === 'final') { showPlayerResult(data.final_teams_result); return; }
       if (!data || !data.teams_options) {
           document.getElementById('votingOptionsContainer').innerHTML = '<p>Esperando opciones...</p>';
-          listenToMatchStatus(true); return;
+          return;
       }
       
       const { data: voteData } = await supabase.from('match_votes').select('id').eq('match_id', currentMatchId).eq('player_id', activePlayerId).single();
@@ -832,23 +825,38 @@ document.addEventListener('DOMContentLoaded', () => {
       options.forEach((opt, index) => {
           const div = document.createElement('div');
           div.className = 'option-card';
+          div.id = `option-card-${index}`; // ID para actualizar votos
           div.innerHTML = `
               <h4>Opción ${index + 1}</h4>
               <div class="team-columns">
                   <div class="team-col"><strong>Negro</strong><ul>${renderListSimple(opt.teamA)}</ul></div>
                   <div class="team-col"><strong>Blanco</strong><ul>${renderListSimple(opt.teamB)}</ul></div>
               </div>
-              <button class="primary vote-btn" data-option="${index}" style="margin-top:10px;">Votar</button>
+              <button class="primary vote-btn" data-option="${index}" style="margin-top:10px;">Votar por Opción ${index + 1}</button>
           `;
           container.appendChild(div);
       });
-      document.querySelectorAll('.vote-btn').forEach(btn => btn.addEventListener('click', handleVote));
+      document.querySelectorAll('.vote-btn').forEach(btn => btn.addEventListener('click', initiateVote));
   }
 
-  async function handleVote(e) {
+  // INICIAR PROCESO DE VOTO (ABRIR MODAL)
+  function initiateVote(e) {
       const idx = parseInt(e.currentTarget.dataset.option);
-      const { error } = await supabase.from('match_votes').insert([{ match_id: currentMatchId, player_id: activePlayerId, option_index: idx }]);
+      pendingVoteIndex = idx;
+      document.getElementById('confirmOptionName').textContent = `Opción ${idx + 1}`;
+      document.getElementById('voteConfirmModal').classList.remove('hidden');
+  }
+
+  // EJECUTAR VOTO (DESDE EL MODAL)
+  async function executeVote() {
+      if (pendingVoteIndex === null) return;
+      
+      document.getElementById('voteConfirmModal').classList.add('hidden');
+      
+      const { error } = await supabase.from('match_votes').insert([{ match_id: currentMatchId, player_id: activePlayerId, option_index: pendingVoteIndex }]);
+      
       if (error && error.code !== '23505') return alert("Error al votar.");
+      
       document.getElementById('votingView').classList.add('hidden');
       document.getElementById('waitingScreen').classList.remove('hidden');
   }
@@ -865,7 +873,6 @@ document.addEventListener('DOMContentLoaded', () => {
       appContent.classList.remove('hidden');
       appContent.style.display = 'block';
       
-      // Ocultar todo menos pizarra
       if(!isCoach) {
           if(addPlayerBox) addPlayerBox.style.display = 'none';
           if(playerListBox) playerListBox.style.display = 'none';
@@ -881,6 +888,26 @@ document.addEventListener('DOMContentLoaded', () => {
       drawTeamOnUnifiedField(result.teamA, 'token-black', 'bottom', ph);
       drawTeamOnUnifiedField(result.teamB, 'token-white', 'top', ph);
       
+      if (!isCoach) {
+          const isInTeamA = result.teamA.some(p => String(p.id) === String(activePlayerId));
+          const isInTeamB = result.teamB.some(p => String(p.id) === String(activePlayerId));
+          let teamColor = 'SUPLENTE';
+          if (isInTeamA) teamColor = 'NEGRO';
+          else if (isInTeamB) teamColor = 'BLANCO';
+          
+          let resultMessage = document.querySelector('#fieldSection h3.result-msg');
+          if (!resultMessage) {
+              resultMessage = document.createElement('h3');
+              resultMessage.className = 'result-msg';
+              resultMessage.style.textAlign = 'center';
+              ph.before(resultMessage);
+          }
+          resultMessage.textContent = `¡Estás en el EQUIPO ${teamColor}!`;
+          document.getElementById('btnShareWhatsapp').style.display = 'none'; 
+      } else {
+          document.getElementById('btnShareWhatsapp').style.display = 'flex'; 
+      }
+      
       field.scrollIntoView({behavior: "smooth"});
   }
 
@@ -892,9 +919,7 @@ document.addEventListener('DOMContentLoaded', () => {
         defensa: [{x:50, y: isBottom?450:100}, {x:140, y: isBottom?450:100}, {x:230, y: isBottom?450:100}], 
         delantero: [{x:140, y: isBottom?350:200}] 
     };
-    // Rellenar positions... (simplificado para brevedad, misma logica anterior)
     team.forEach((p, i) => {
-       // Logica simple de fallback si no hay hueco definido
        let pos = {x: 140, y: isBottom?300:250}; 
        if(coords[p.position] && coords[p.position].length) pos = coords[p.position].shift();
        createToken(p, target, cls, pos.x, pos.y);
