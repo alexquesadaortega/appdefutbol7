@@ -9,9 +9,6 @@
 <link rel="icon" href="icono.png" sizes="32x32">
 <link rel="apple-touch-icon" href="icono.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" sizes="180x180" href="icono.png">
-<link rel="icon" sizes="192x192" href="icono.png">
 <link rel="manifest" href="/manifest.json">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -219,7 +216,7 @@ button.select-btn.selected {
   <p id="lobbyStatus" style="font-size:0.9rem;">Introduce tu código y vota por el mejor equilibrio.</p>
   
   <div id="playerAuthForm">
-    <input id="playerCodeInput" placeholder="Tu Código (Ej. LAMN87)" style="text-align:center;">
+    <input id="playerCodeInput" placeholder="Tu Código (Ej. ALEX91)" style="text-align:center;">
     <button id="btnAuthPlayer" class="secondary" style="margin-top:5px;">🔍 Buscar Ficha</button>
 
     <div id="playerFound" class="hidden" style="margin-top:15px; background:rgba(163, 230, 53, 0.1); padding:15px; border-radius:12px;">
@@ -312,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- CONFIG ---
   // ! CAMBIA ESTOS DATOS POR LOS TUYOS DE SUPABASE
   const SUPABASE_URL = 'https://vayholflhqoyflbvuusa.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheWhvbGZsaHFveWZsYnZ1dXNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNzc5NjcsImV4cCI6MjA3ODY1Mzk2N30.QxD4_XbYlQarPRUcmoQQclw8cCnnzRiHZcYzSsUXGDA' ; 
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZayhvbGZsaHFveWZsYnZ1dXNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNzc5NjcsImV4cCI6MjA3ODY1Mzk2N30.QxD4_XbYlQarPRUcmoQQclw8cCnnzRiHZcYzSsUXGDA';
   let supabase;
   try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e) { console.error("Error Supabase", e); }
 
@@ -322,7 +319,6 @@ document.addEventListener('DOMContentLoaded', () => {
   let activePlayerId = null; 
   let activePlayerData = null; 
   
-  // --- NUEVAS VARIABLES DE ESTADO PARA EL MÍSTER ---
   let generatedOptions = []; 
   let selectedVotingOptions = []; 
 
@@ -333,9 +329,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- ELEMENTOS ---
   const authBox = document.getElementById('authBox');
   const appContent = document.getElementById('appContent');
-  const addPlayerBox = document.getElementById('addPlayerBox'); // Nuevo ID
-  const playerListBox = document.getElementById('playerListBox'); // Nuevo ID
-  const matchControlBox = document.getElementById('matchControlBox'); // Nuevo ID
+  const addPlayerBox = document.getElementById('addPlayerBox'); 
+  const playerListBox = document.getElementById('playerListBox'); 
+  const matchControlBox = document.getElementById('matchControlBox'); 
   const authMsg = document.getElementById('authMsg');
   const playersListEl = document.getElementById('playersList');
   const generateError = document.getElementById('generateError');
@@ -384,7 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
               // MÍSTER: Cargar Dashboard Normal (Sin match_id)
               initApp();
           }
-          // Si no hay sesión y no hay match_id, por defecto se muestra authBox
+          // Si no hay match_id y no hay sesión, se muestra authBox por defecto (CORRECTO)
       }
   });
 
@@ -426,7 +422,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function initApp() { 
       authBox.style.display = 'none'; 
       appContent.classList.remove('hidden'); 
-      appContent.style.display = 'block'; // <--- CORRECCIÓN CLAVE
+      appContent.style.display = 'block'; 
       
       // Asegurarse de que todos los bloques del dashboard normal estén visibles
       if(addPlayerBox) addPlayerBox.style.display = 'block';
@@ -436,18 +432,18 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('matchControlTitle').textContent = '⚡ Generar Partido';
       document.getElementById('matchControlSubtitle').textContent = 'Genera 5 opciones para seleccionar las 3 mejores para la votación.';
       document.getElementById('btnGenerateTeams').style.display = 'block';
-      document.getElementById('teamsResult').innerHTML = ''; // Limpiar resultados de Sala de Control
+      document.getElementById('teamsResult').innerHTML = ''; 
 
       await loadPlayers(); 
   }
 
-  // --- SALA DE CONTROL DEL MÍSTER (NUEVA) ---
+  // --- SALA DE CONTROL DEL MÍSTER ---
   async function initCoachControlRoom(matchId) {
     currentMatchId = matchId;
     authBox.style.display = 'none';
     playerLobby.style.display = 'none';
     appContent.classList.remove('hidden');
-    appContent.style.display = 'block'; // CORRECCIÓN: Asegurar visibilidad
+    appContent.style.display = 'block'; 
 
     // Ocultar las secciones de gestión de plantilla
     if(addPlayerBox) addPlayerBox.style.display = 'none';
@@ -464,9 +460,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
     if (error || !match) {
         alert("Error cargando la sala de control o no tienes permisos. Redirigiendo al dashboard.");
-        // Redirigir al dashboard normal si hay error o no tiene permisos
         initApp(); 
-        window.history.replaceState(null, null, window.location.pathname); // Limpiar URL
+        window.history.replaceState(null, null, window.location.pathname); 
         return;
     }
     
@@ -475,20 +470,15 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('matchControlSubtitle').textContent = 'Votación en curso. Revisa los resultados en tiempo real.';
 
     if (match.status === 'final' && match.final_teams_result) {
-        // Ya finalizó, mostrar pizarra
         showPlayerResult(match.final_teams_result, true); 
         return;
     }
 
     if (match.status === 'voting' && match.teams_options && match.teams_options.length === 3) {
-        // 2. Míster en el modo Votación 
         generatedOptions = match.teams_options.concat(new Array(2).fill(null));
         selectedVotingOptions = [0, 1, 2]; 
 
-        // 3. Renderizar las 3 opciones con botones de finalizar
         displayControlRoomOptions(match.teams_options); 
-        
-        // 4. Empezar a escuchar votos en tiempo real
         listenToVotes(); 
     }
   }
@@ -496,6 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- JUGADORES Y LISTA (COACH) ---
   async function loadPlayers() { 
     if (!currentUser) return;
+    // Nota: La RLS para el COACH debe ser: auth.uid() = user_id
     const { data } = await supabase.from('players').select('*').eq('user_id', currentUser.id);
     allPlayers = data || [];
     renderList();
@@ -550,7 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderList();
   }
 
-  // RENDERIZAR LISTA (MOSTRANDO CÓDIGO)
+  // RENDERIZAR LISTA
   function renderList() { 
     playersListEl.innerHTML = '';
     document.getElementById('playerCount').textContent = `(${allPlayers.length})`;
@@ -591,7 +582,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- GENERACIÓN DE EQUIPOS (COACH) Y SELECCIÓN DE 5 OPCIONES ---
+  // --- GENERACIÓN DE EQUIPOS (COACH) ---
   function generateTeamOptions() { 
     generateError.style.display = 'none';
     const checks = document.querySelectorAll('.p-select:checked');
@@ -624,12 +615,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     variations.sort((a, b) => a.diff - b.diff); 
-    // AHORA SELECCIONAMOS LAS TOP 5
     generatedOptions = variations.slice(0, 5); 
 
     if (generatedOptions.length === 0) { showError("Error generando combinaciones."); return; }
     
-    selectedVotingOptions = []; // Resetear selección
+    selectedVotingOptions = []; 
     displayOptionsForSelection(generatedOptions); 
     updatePublishButtonState();
   }
@@ -664,8 +654,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   // --- MANEJO DE SELECCIÓN DE OPCIONES (COACH) ---
-  
-  // RENDERIZAR OPCIONES PARA SELECCIÓN
   function displayOptionsForSelection(options) {
       const container = document.getElementById('teamsResult');
       container.innerHTML = `
@@ -714,14 +702,12 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('btnPublishOptions').addEventListener('click', publishVotingOptions);
   }
 
-  // MANEJO DE SELECCIÓN DE OPCIONES
   function handleOptionSelection(e) {
       const btn = e.currentTarget;
       const index = parseInt(btn.dataset.index);
       const card = document.getElementById(`option-card-${index}`);
 
       if (selectedVotingOptions.includes(index)) {
-          // Deseleccionar
           selectedVotingOptions = selectedVotingOptions.filter(i => i !== index);
           btn.classList.remove('selected', 'primary');
           btn.classList.add('secondary');
@@ -729,7 +715,6 @@ document.addEventListener('DOMContentLoaded', () => {
           btn.style.background = '#334155';
           card.style.border = '1px solid rgba(255,255,255,0.05)';
       } else {
-          // Seleccionar
           if (selectedVotingOptions.length >= 3) {
               alert("Solo puedes seleccionar hasta 3 opciones para la votación.");
               return;
@@ -746,7 +731,6 @@ document.addEventListener('DOMContentLoaded', () => {
       updatePublishButtonState();
   }
 
-  // ACTUALIZAR ESTADO DEL BOTÓN PUBLICAR
   function updatePublishButtonState() {
       const statusEl = document.getElementById('selectionStatus');
       const publishBtn = document.getElementById('btnPublishOptions');
@@ -762,11 +746,10 @@ document.addEventListener('DOMContentLoaded', () => {
           publishBtn.disabled = true;
           publishBtn.classList.remove('primary');
           publishBtn.classList.add('secondary');
-          statusEl.style.color = '#f87171'; // Rojo si falta
+          statusEl.style.color = '#f87171';
       }
   }
   
-  // PUBLICAR OPCIONES Y OBTENER LINK (ACTUALIZADA con Redirección a Sala de Control)
   async function publishVotingOptions() {
       if (selectedVotingOptions.length !== 3) {
           return alert("Debes seleccionar exactamente 3 opciones antes de publicar.");
@@ -778,7 +761,6 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const finalOptionsToPublish = selectedVotingOptions.map(index => generatedOptions[index]);
 
-      // 1. Crear el ID del partido si no existe
       if (!currentMatchId) {
           const { data, error } = await supabase
               .from('matches')
@@ -794,7 +776,6 @@ document.addEventListener('DOMContentLoaded', () => {
           currentMatchId = data.id;
       }
 
-      // 2. Subir las opciones y cambiar el estado a 'voting'
       const { error: updateError } = await supabase
           .from('matches')
           .update({ 
@@ -810,18 +791,14 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
       }
 
-      // 3. Generar Enlace y Mostrar Modal de Compartir
       const controlLink = `${window.location.origin}${window.location.pathname}?match_id=${currentMatchId}`;
-      
       showShareModal(controlLink);
       
-      // 4. Redireccionamos al Míster a la Sala de Control
       setTimeout(() => {
           window.location.href = controlLink;
       }, 100); 
   }
   
-  // FUNCIÓN PARA MOSTRAR LAS OPCIONES DE COMPARTIR
   function showShareModal(link) {
       const defaultMessage = `⚽ ¡A VOTAR! El Míster ha publicado las opciones de equipo. Usa este enlace para votar:`;
       const whatsappLink = `whatsapp://send?text=${encodeURIComponent(defaultMessage)}\n${encodeURIComponent(link)}`;
@@ -839,7 +816,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
   }
 
-  // Función auxiliar para mostrar el enlace cuando el nativo falla o en desktop
   function showAdvancedAlert(link, whatsappLink) {
       const linkDisplay = "---------------------------\n" + link + "\n---------------------------";
       
@@ -849,9 +825,8 @@ document.addEventListener('DOMContentLoaded', () => {
           "\n\n👉 Para copiar: presiona OK y el enlace se copiará automáticamente.\n👉 Para enviar por WhatsApp: copia el enlace y pégalo en tu chat."
       );
       
-      // Intentar copiar al portapapeles (se ejecuta después del primer alert)
       navigator.clipboard.writeText(link).then(() => {
-          // Éxito al copiar (la notificación se realiza en el alert anterior)
+          // Success
       }).catch(err => {
           console.error("Error al copiar link:", err);
       });
@@ -861,7 +836,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function displayControlRoomOptions(options) {
       const container = document.getElementById('teamsResult');
       
-      // Contenido de la Sala de Control
       container.innerHTML = `
           <div class="box" style="border: 1px solid var(--primary); margin-top:20px;">
               <h2 style="color: var(--primary);">📊 Sala de Control (Votación)</h2>
@@ -899,7 +873,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       document.getElementById('btnFinalizeTeam').addEventListener('click', () => {
           const voteCounts = {};
-          // Solo contamos las opciones que se están mostrando (las 3 publicadas)
           options.forEach((_, index) => voteCounts[index] = 0);
           allVotes.forEach(vote => {
               const votedIndex = parseInt(vote.option_index);
@@ -914,10 +887,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- VOTOS EN TIEMPO REAL (COACH) ---
   let allVotes = [];
   function listenToVotes() {
-      // Remover subscripción anterior si existe
       supabase.removeChannel(supabase.channel('vote-room'));
       
-      // Escucha solo votos para el partido actual
       supabase
       .channel('vote-room')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'match_votes', filter: `match_id=eq.${currentMatchId}` }, payload => {
@@ -926,7 +897,6 @@ document.addEventListener('DOMContentLoaded', () => {
       })
       .subscribe();
       
-      // Cargar votos existentes al iniciar la escucha
       supabase.from('match_votes').select('option_index').eq('match_id', currentMatchId)
           .then(({ data }) => {
               allVotes = data || [];
@@ -935,7 +905,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function updateVoteDisplay() {
-      // El array selectedVotingOptions contiene los índices de las 3 opciones publicadas
       const optionsToMonitor = selectedVotingOptions; 
       
       const voteCounts = {};
@@ -955,7 +924,6 @@ document.addEventListener('DOMContentLoaded', () => {
           const votes = voteCounts[index] || 0;
           const percentage = totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : 0;
           
-          // El ID de la tarjeta en la Sala de Control es el índice de la opción generada
           const card = document.getElementById(`option-card-${index}`);
           if (card) {
               let voteStatusEl = card.querySelector('.vote-status');
@@ -983,10 +951,9 @@ document.addEventListener('DOMContentLoaded', () => {
       alertMessage += "\nIntroduce el número de la opción que eliges como final (1, 2 o 3).";
       
       let choice = prompt(alertMessage);
-      const chosenOptionIndex = parseInt(choice); // Mapear 1, 2, 3
+      const chosenOptionIndex = parseInt(choice); 
 
       if(choice !== null && chosenOptionIndex >= 1 && chosenOptionIndex <= optionsInfo.length) {
-          // El índice de la opción ganadora en el array de generatedOptions (0, 1, 2)
           const winningOptionIndex = optionsInfo[chosenOptionIndex - 1].index;
           finalizeTeam(winningOptionIndex); 
       } else if (choice !== null) {
@@ -994,11 +961,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
   }
   
-  // PUBLICAR RESULTADO FINAL (COACH)
   window.finalizeTeam = async function (winningGeneratedIndex) { 
       if (!currentMatchId || generatedOptions.length === 0) return alert("Error: No hay opciones generadas o ID de partido.");
       
-      // La opción ganadora se obtiene del array principal `generatedOptions` usando el índice
       const winningOption = generatedOptions[winningGeneratedIndex];
       
       const { error } = await supabase
@@ -1012,7 +977,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) return console.error("Error al finalizar el equipo:", error);
 
       alert(`¡Opción ${winningGeneratedIndex + 1} publicada como equipo final!`);
-      // Ocultamos la vista de opciones y forzamos la vista de la pizarra
       document.getElementById('teamsResult').innerHTML = ''; 
       showPlayerResult(winningOption, true); 
   }
@@ -1020,7 +984,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderListSimple(t) {
     const order={portero:0,defensa:1,delantero:2};
-    // No mostramos rating ni posición en esta lista, solo nombre
     return [...t].sort((a,b)=>order[a.position]-order[b.position]).map(p=>`<li><span>${p.name}</span></li>`).join('');
   }
 
@@ -1029,25 +992,49 @@ document.addEventListener('DOMContentLoaded', () => {
       const code = playerCodeInput.value.trim().toUpperCase();
       if (!code) return alert("Introduce tu código de jugador.");
 
-      const { data, error } = await supabase
-          .from('players')
-          .select('*')
-          .eq('player_code', code)
-          .single();
-
-      if (error || !data) {
-          document.getElementById('playerFound').classList.add('hidden');
-          return alert("Código no encontrado. Revisa tu código.");
-      }
-
-      activePlayerData = data;
-      activePlayerId = data.id;
-
-      document.getElementById('foundPlayerName').textContent = data.name;
+      // OCULTAR MENSAJE DE ENCONTRADO
+      document.getElementById('playerFound').classList.add('hidden');
       
-      document.getElementById('playerFound').classList.remove('hidden');
-      playerCodeInput.disabled = true;
-      btnAuthPlayer.disabled = true;
+      // 🚨 CORRECCIÓN CLAVE: Usar FETCH puro para inyectar la cabecera para RLS
+      // Esto es necesario si la política RLS del rol 'anon' es estricta (usando request.header)
+      
+      const apiUrl = `${SUPABASE_URL}/rest/v1/players?select=*&player_code=eq.${code}`;
+      
+      try {
+          const response = await fetch(apiUrl, {
+              method: 'GET',
+              headers: {
+                  'apikey': SUPABASE_KEY,
+                  'Authorization': `Bearer ${SUPABASE_KEY}`,
+                  // ➡️ Cabecera clave para que la RLS estricta funcione
+                  'player-code': code, 
+                  'Accept': 'application/json' 
+              }
+          });
+
+          if (!response.ok) {
+              console.error("Fetch Error:", response.status, await response.text());
+              return alert("Error buscando tu código. Revisa que el código RLS sea correcto.");
+          }
+
+          const data = await response.json();
+          
+          if (!data || data.length === 0) {
+              return alert("Código no encontrado. Revisa tu código.");
+          }
+
+          activePlayerData = data[0];
+          activePlayerId = data[0].id;
+
+          document.getElementById('foundPlayerName').textContent = activePlayerData.name;
+          document.getElementById('playerFound').classList.remove('hidden');
+          playerCodeInput.disabled = true;
+          btnAuthPlayer.disabled = true;
+
+      } catch (error) {
+          console.error('Error de red o parseo:', error);
+          alert('Error de conexión. Inténtalo de nuevo.');
+      }
   }
 
   async function enterVoting() {
@@ -1070,7 +1057,6 @@ document.addEventListener('DOMContentLoaded', () => {
       container.innerHTML = '';
       
       if (data && data.status === 'final' && data.final_teams_result) {
-          // Si ya hay resultado final publicado, vamos directo a la pizarra
           showPlayerResult(data.final_teams_result);
           return;
       }
@@ -1081,7 +1067,6 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
       }
       
-      // Comprobar si ya votó
       const { data: voteData } = await supabase
           .from('match_votes')
           .select('id')
@@ -1146,7 +1131,6 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
       } 
       
-      // Voto exitoso o ya votado: pasar a la pantalla de espera
       document.getElementById('votingView').classList.add('hidden');
       document.getElementById('waitingScreen').classList.remove('hidden');
   }
@@ -1160,11 +1144,9 @@ document.addEventListener('DOMContentLoaded', () => {
           const matchData = payload.new;
           
           if (matchData.status === 'final' && matchData.final_teams_result) {
-              // El míster ha publicado el resultado final
               showPlayerResult(matchData.final_teams_result);
           } else if (isInitialFetch && matchData.status === 'voting' && matchData.teams_options) {
-               // El míster acaba de publicar las opciones de voto
-              fetchVotingOptions();
+               fetchVotingOptions();
           }
       })
       .subscribe();
@@ -1177,7 +1159,6 @@ document.addEventListener('DOMContentLoaded', () => {
       appContent.classList.remove('hidden');
       
       document.querySelectorAll('.box').forEach(b => {
-         // Oculta todas las cajas del Coach excepto la Pizarra
          if(b.id !== 'fieldSection' && b.id !== 'authBox') b.style.display = 'none';
       });
       
@@ -1187,14 +1168,11 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const fieldPlaceholder = document.getElementById('fullField');
       
-      // Limpiar pizarra
       fieldPlaceholder.querySelectorAll('.player-token').forEach(e => e.remove());
       
-      // Dibujar equipos
       drawTeamOnUnifiedField(resultData.teamA, 'token-black', 'bottom', fieldPlaceholder);
       drawTeamOnUnifiedField(resultData.teamB, 'token-white', 'top', fieldPlaceholder);
       
-      // Mostrar mensaje al jugador
       if (!isCoachView) {
           const isInTeamA = resultData.teamA.some(p => String(p.id) === String(activePlayerId));
           const isInTeamB = resultData.teamB.some(p => String(p.id) === String(activePlayerId));
@@ -1212,10 +1190,11 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           resultMessage.style.color = teamColor === 'NEGRO' ? '#334155' : (teamColor === 'BLANCO' ? '#f1f5f9' : '#94a3b8');
           resultMessage.textContent = `¡Estás en el EQUIPO ${teamColor}!`;
+          document.getElementById('btnShareWhatsapp').style.display = 'none'; // Jugador no comparte pizarra
       } else {
-          // Ocultar mensaje del jugador si es el míster
           let resultMessage = document.querySelector('#fieldSection h3.result-msg');
           if(resultMessage) resultMessage.remove();
+          document.getElementById('btnShareWhatsapp').style.display = 'flex'; 
       }
       
       fieldSection.scrollIntoView({behavior: "smooth"});
@@ -1285,7 +1264,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const l = document.createElement('div'); l.className='player-label'; l.textContent=p.name;
     el.appendChild(l);
     
-    // Solo permitimos arrastrar en el modo entrenador 
     if (currentUser) {
         el.addEventListener('mousedown', startDrag);
         el.addEventListener('touchstart', startDrag, {passive: false});
@@ -1297,14 +1275,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Lógica Drag & Drop (Sin cambios)
-  let activeItem = null; let activeContainer = null;
-  let initialX, initialY, xOffset = 0, yOffset = 0;
+  let activeItem = null; 
+  let xOffset = 0, yOffset = 0;
 
   function startDrag(e) {
     const evt = e.type === 'touchstart' ? e.touches[0] : e;
-    initialX = evt.clientX - xOffset; initialY = evt.clientY - yOffset;
     activeItem = e.currentTarget;
-    activeContainer = activeItem.parentElement;
+    const activeContainer = activeItem.parentElement;
     
     const rect = activeItem.getBoundingClientRect();
     const parentRect = activeContainer.getBoundingClientRect();
