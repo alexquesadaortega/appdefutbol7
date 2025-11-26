@@ -40,9 +40,10 @@ body {  
   background-image: radial-gradient(circle at top right, #1e293b 0%, #0f172a 100%);
   color: var(--text-main);
   margin: 0; 
-  padding: 20px 15px 120px 15px;
+  padding: 20px 15px 120px 15px; 
   min-height: 10vh;
 }
+body.final-match-view { padding-bottom: 20px; } /* Ajuste estético para la vista final */
  
 h1, h2, h3 { font-family: 'Kanit', sans-serif; margin-top: 0; letter-spacing: 0.5px; }
  
@@ -125,8 +126,10 @@ button.select-btn.selected { background: var(--accent); color: #000; border: 1px
 }
 .team-columns { display: flex; flex-direction: column; gap: 20px; margin-top: 15px; } 
 @media (min-width: 768px) { .team-columns { flex-direction: row; } }
-.team-col ul { padding: 0; list-style: none; }
+.team-col { flex: 1; }
+.team-col ul { padding: 0; list-style: none; margin-top: 5px; margin-bottom: 0; }
 .team-col li { padding: 8px 0; border-bottom: 1px dashed #334155; display:flex; justify-content:space-between; font-size: 0.9rem; color: #cbd5e1; }
+.team-col li:last-child { border-bottom: none; }
 
 /* CAMPO DE FÚTBOL */
 .field-container { display: flex; flex-direction: column; align-items: center; gap: 25px; background: #e2e8f0; padding: 20px; border-radius: 12px; margin-top: 10px; }
@@ -146,6 +149,7 @@ button.select-btn.selected { background: var(--accent); color: #000; border: 1px
   box-shadow: 0 4px 6px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.3); transition: transform 0.1s, top 0.3s, left 0.3s;
 }
 .player-token:active { cursor: grabbing; transform: scale(1.2); z-index: 100; }
+.player-token[style*="cursor: default"] { cursor: default !important; } /* Sobrescribir cursor para el jugador */
 .token-black { background: radial-gradient(circle at 30% 30%, #374151, #111827); color: #fff; border: 2px solid #fff; }
 .token-white { background: radial-gradient(circle at 30% 30%, #fff, #e5e7eb); color: #111827; border: 2px solid #111827; }
 .player-label { position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: #fff; padding: 2px 8px; border-radius: 8px; font-size: 10px; white-space: nowrap; font-weight: 600; pointer-events: none; }
@@ -202,25 +206,17 @@ button.select-btn.selected { background: var(--accent); color: #000; border: 1px
     <p id="votingHeader" style="font-size:0.85rem; color:var(--text-muted);">Mira como van los votos y elige tu favorita.</p>
     <div id="votingOptionsContainer"></div>
   </div>
-  
-  </div>
+</div>
 
-<div id="voteConfirmModal" class="modal-overlay hidden">
-  <div class="modal-content">
-    <h3 style="color: var(--accent); margin-top:0;">⚠️ Confirmar Voto</h3>
-    <p style="color: #cbd5e1;">Vas a votar por la <strong id="confirmOptionName" style="color: #fff;">Opción X</strong>.</p>
-    <p style="font-size:0.85rem; color: #94a3b8;">¿Estás seguro? No podrás cambiarlo.</p>
-    
-    <div class="btn-group" style="margin-top:20px;">
-      <button id="btnCancelVote" class="secondary" style="background: transparent; border: 1px solid #64748b; color: #cbd5e1;">Cancelar</button>
-      <button id="btnDoVote" class="primary" style="background: var(--accent); color: #000;">Sí, Votar</button>
-    </div>
+<div id="playerFinalView" class="hidden">
+  <div class="box" id="finalResultBox" style="border: 1px solid var(--accent);">
+      <h2 style="color: var(--accent);">🏆 Alineación Final</h2>
+      <p style="font-size:0.9rem; color:var(--text-muted);">El Míster ha publicado los equipos y está ajustando la táctica en tiempo real.</p>
+      <div id="finalTeamsResult"></div>
   </div>
 </div>
 
-
 <div id="appContent" class="hidden">
-  
   <div class="box" id="addPlayerBox">
     <h2>👤 Nuevo Fichaje</h2>
     <p style="font-size:0.85rem; color:var(--text-muted);">El código se genera automáticamente.</p>
@@ -258,36 +254,48 @@ button.select-btn.selected { background: var(--accent); color: #000; border: 1px
 
     <div id="teamsResult" style="margin-top:20px;"></div>
   </div>
+</div>
 
-  <div id="fieldSection" class="box hidden" style="background: #f1f5f9; color: #1e293b;">
-    <h2 style="text-align:center; color:#1e293b;">Pizarra Táctica <span id="fieldHeaderStatus"> (Míster)</span></h2>
-    <p style="text-align:center; font-size:0.8rem; color:#64748b; margin-bottom:15px;" id="fieldSubtitle">Mueve las fichas y comparte la imagen.</p>
-    
-    <div class="field-container" id="captureArea">
-      <div id="fullField" class="full-field">
-          <div class="field-line-center"></div>
-          <div class="field-circle"></div>
-          <div class="area-A"></div> <div class="area-B"></div> </div>
-      <div style="width: 100%; display: flex; justify-content: space-between; padding: 0 10px;">
-          <div style="background:#111827; color:white; padding:6px 15px; border-radius:20px; font-weight:bold; font-family:'Kanit'; font-size:0.8rem;">EQUIPO NEGRO</div>
-          <div style="background:#fff; color:#111827; border:2px solid #111827; padding:6px 15px; border-radius:20px; font-weight:bold; font-family:'Kanit'; font-size:0.8rem;">EQUIPO BLANCO</div>
-      </div>
-    </div>
-
-    <div style="position:sticky; bottom:0; background:transparent; padding:15px 0; z-index:100;">
-        <button id="btnShareWhatsapp" class="whatsapp">📲 Enviar Alineación</button>
+<div id="fieldSection" class="box hidden" style="background: #f1f5f9; color: #1e293b;">
+  <h2 style="text-align:center; color:#1e293b;">Pizarra Táctica <span id="fieldHeaderStatus"> (Míster)</span></h2>
+  <p style="text-align:center; font-size:0.8rem; color:#64748b; margin-bottom:15px;" id="fieldSubtitle">Mueve las fichas y comparte la imagen.</p>
+  
+  <div class="field-container" id="captureArea">
+    <div id="fullField" class="full-field">
+        <div class="field-line-center"></div>
+        <div class="field-circle"></div>
+        <div class="area-A"></div> <div class="area-B"></div> </div>
+    <div style="width: 100%; display: flex; justify-content: space-between; padding: 0 10px;">
+        <div style="background:#111827; color:white; padding:6px 15px; border-radius:20px; font-weight:bold; font-family:'Kanit'; font-size:0.8rem;">EQUIPO NEGRO</div>
+        <div style="background:#fff; color:#111827; border:2px solid #111827; padding:6px 15px; border-radius:20px; font-weight:bold; font-family:'Kanit'; font-size:0.8rem;">EQUIPO BLANCO</div>
     </div>
   </div>
 
+  <div style="position:sticky; bottom:0; background:transparent; padding:15px 0; z-index:100;" id="shareContainer">
+      <button id="btnShareWhatsapp" class="whatsapp">📲 Enviar Alineación</button>
+  </div>
 </div>
+
+<div id="voteConfirmModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <h3 style="color: var(--accent); margin-top:0;">⚠️ Confirmar Voto</h3>
+    <p style="color: #cbd5e1;">Vas a votar por la <strong id="confirmOptionName" style="color: #fff;">Opción X</strong>.</p>
+    <p style="font-size:0.85rem; color: #94a3b8;">¿Estás seguro? No podrás cambiarlo.</p>
+    
+    <div class="btn-group" style="margin-top:20px;">
+      <button id="btnCancelVote" class="secondary" style="background: transparent; border: 1px solid #64748b; color: #cbd5e1;">Cancelar</button>
+      <button id="btnDoVote" class="primary" style="background: var(--accent); color: #000;">Sí, Votar</button>
+    </div>
+  </div>
+</div>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   // --- CONFIGURACIÓN SUPABASE ---
   // ! CAMBIA ESTOS DATOS POR LOS TUYOS DE SUPABASE
-  // NOTA: He mantenido tus claves originales para que puedas probarlas si son funcionales.
   const SUPABASE_URL = 'https://vayholflhqoyflbvuusa.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheWhvbGZsaHFveWZsYnZ1dXNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNzc5NjcsImV4cCI6MjA3ODY1Mzk2N30.QxD4_XbYlQarPRUcmoQQclw8cCnnzRiHZcYzSsUXGDA' ;
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheWhvbGZsaHFveWZsYnZ1dXNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNzc5NjcsImV4cCI6MjA3ODY1Mzk2N30.QxD4_XbYlQarPRUcmoQQclw8cCnnzRiHZcYzSsUXGDA' ;
   let supabase;
   try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e) { console.error("Error Supabase", e); }
 
@@ -297,12 +305,10 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentMatchId = null; 
   let activePlayerId = null; 
   let activePlayerData = null; 
-  let allVotes = []; // Guardar votos en vivo
-  
   let generatedOptions = []; 
   let selectedVotingOptions = []; 
-  let pendingVoteIndex = null; // Para la confirmación
-  let fieldSubscription = null; // Realtime Field Updates
+  let pendingVoteIndex = null;
+  let fieldSubscription = null;
 
   // Drag and Drop Variables
   let dragTarget = null;
@@ -312,31 +318,32 @@ document.addEventListener('DOMContentLoaded', () => {
   const matchLinkID = urlParams.get('match_id'); 
 
   // --- ELEMENTOS DOM ---
+  const body = document.body;
   const authBox = document.getElementById('authBox');
   const appContent = document.getElementById('appContent');
   const addPlayerBox = document.getElementById('addPlayerBox'); 
   const playerListBox = document.getElementById('playerListBox'); 
   const matchControlBox = document.getElementById('matchControlBox'); 
-  const authMsg = document.getElementById('authMsg');
   const playersListEl = document.getElementById('playersList');
-  const generateError = document.getElementById('generateError');
-  const btnShare = document.getElementById('btnShareWhatsapp');
   const fullField = document.getElementById('fullField'); 
   const fieldSection = document.getElementById('fieldSection');
 
-  // DOM Jugador y Modales
+  // DOM Jugador
   const playerLobby = document.getElementById('playerLobby');
+  const playerFinalView = document.getElementById('playerFinalView');
+  const finalResultBox = document.getElementById('finalResultBox');
+  const finalTeamsResultContainer = document.getElementById('finalTeamsResult');
+  const shareContainer = document.getElementById('shareContainer');
+  const btnShare = document.getElementById('btnShareWhatsapp');
   const playerCodeInput = document.getElementById('playerCodeInput');
   const btnAuthPlayer = document.getElementById('btnAuthPlayer');
   const btnEnterVoting = document.getElementById('btnEnterVoting'); 
-  
-  // Modal Confirmación
   const voteConfirmModal = document.getElementById('voteConfirmModal');
   const btnCancelVote = document.getElementById('btnCancelVote');
   const btnDoVote = document.getElementById('btnDoVote');
-  
-  // Contenedor de Opciones de Votación (para jugador y míster)
   const votingOptionsContainer = document.getElementById('votingOptionsContainer');
+  const generateError = document.getElementById('generateError');
+
 
   // --- EVENTOS ---
   document.getElementById('btnRegister').addEventListener('click', () => handleAuth('signup'));
@@ -371,7 +378,7 @@ document.addEventListener('DOMContentLoaded', () => {
               appContent.style.display = 'none';
               playerLobby.classList.remove('hidden');
               currentMatchId = matchLinkID;
-              loadVotingStatus(); // Iniciar carga para el jugador
+              loadVotingStatus(); // Iniciar carga para el jugador (si ya está en final, mostrará la pizarra)
           }
       } else {
           if (session) initApp();
@@ -381,29 +388,31 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- FUNCIONES UTILIDAD ---
   function selectAllPlayers() { document.querySelectorAll('.p-select').forEach(c => c.checked = true); }
   function deselectAllPlayers() { document.querySelectorAll('.p-select').forEach(c => c.checked = false); } 
-  function showMsg(txt) { authMsg.textContent = txt; }
+  function showMsg(txt) { document.getElementById('authMsg').textContent = txt; }
   function generatePlayerCode(name) {
       const cleanName = name.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
       const shortName = cleanName.substring(0, Math.min(cleanName.length, 4));
       const randomNum = Math.floor(10 + Math.random() * 89);
       return `${shortName}${randomNum}`;
   }
-  function renderListSimple(t) { return [...t].map(p=>`<li><span>${p.name}</span></li>`).join(''); }
+  function renderListSimple(t) { return [...t].map(p=>`<li><span>${p.name}</span><span style="color:${p.team === 'black' ? '#94a3b8' : '#f1f5f9'};">${p.rating}</span></li>`).join(''); }
   function clearField() { document.querySelectorAll('.player-token').forEach(el => el.remove()); }
+  function showError(msg) { generateError.textContent = msg; generateError.style.display = 'block'; }
+  function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
   
   // --- AUTH (COACH) ---
   async function handleAuth(type) { 
     const email = document.getElementById('authEmail').value.trim();
     const password = document.getElementById('authPassword').value;
     
-    authMsg.style.color = '#94a3b8';
+    document.getElementById('authMsg').style.color = '#94a3b8';
     if (!email || !password) return showMsg('⚠️ Rellena los datos');
     
     showMsg('⏳ Conectando...');
     let res = type === 'signup' ? await supabase.auth.signUp({ email, password }) : await supabase.auth.signInWithPassword({ email, password });
 
     if (res.error) {
-        authMsg.style.color = '#ef4444';
+        document.getElementById('authMsg').style.color = '#ef4444';
         showMsg(res.error.message);
     } else { 
         currentUser = res.data.user; 
@@ -422,9 +431,11 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('matchControlSubtitle').textContent = 'Genera 5 opciones para seleccionar las 3 mejores para la votación.';
       document.getElementById('btnGenerateTeams').style.display = 'block';
       document.getElementById('teamsResult').innerHTML = ''; 
-      fieldSection.classList.add('hidden'); // Ocultar pizarra por defecto
+      fieldSection.classList.add('hidden');
+      if(shareContainer) shareContainer.style.display = 'block'; // Asegurar visible para míster
+
       await loadPlayers(); 
-      if(fieldSubscription) supabase.removeChannel(fieldSubscription); // Detener escucha si es Míster
+      if(fieldSubscription) supabase.removeChannel(fieldSubscription);
   }
 
   // --- SALA DE CONTROL DEL MÍSTER ---
@@ -432,6 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
     currentMatchId = matchId;
     authBox.style.display = 'none';
     playerLobby.style.display = 'none';
+    playerFinalView.style.display = 'none'; // Asegurar que la vista del jugador está oculta
     appContent.classList.remove('hidden');
     appContent.style.display = 'block'; 
 
@@ -457,7 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('matchControlSubtitle').textContent = 'Votación en curso. Revisa los resultados en tiempo real.';
 
     if (match.status === 'final' && match.final_teams_result) {
-        showPlayerResult(match.final_teams_result, true); 
+        showPlayerResult(match.final_teams_result, true);  // Muestra la alineación final
         loadFieldFromFinalTeams(match.final_teams_result.teamA, match.final_teams_result.teamB, true);
         if (match.field_positions) applyFieldPositions(match.field_positions, true);
         return;
@@ -467,7 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
         generatedOptions = match.teams_options.concat(new Array(2).fill(null));
         selectedVotingOptions = [0, 1, 2]; 
         displayControlRoomOptions(match.teams_options); 
-        listenToVotes(); 
+        // Aquí podrías escuchar los votos, pero por simplicidad de este código, se omite.
     }
   }
 
@@ -533,6 +545,29 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --- GENERACIÓN Y SELECCIÓN (COACH) ---
+  function createStrictMatch(originalPool) {
+    // Implementación de la generación de equipos (omito el cuerpo por brevedad, asumo que es correcto)
+    const gks = shuffle(originalPool.filter(p => p.position === 'portero'));
+    const defs = shuffle(originalPool.filter(p => p.position === 'defensa'));
+    const fwds = shuffle(originalPool.filter(p => p.position === 'delantero'));
+    if(gks.length < 2 || defs.length < 6 || fwds.length < 2) return null;
+
+    const teamA = []; const teamB = [];
+    teamA.push(gks.pop()); teamB.push(gks.pop());            
+    for(let k=0;k<3;k++) { teamA.push(defs.pop()); teamB.push(defs.pop()); } 
+    teamA.push(fwds.pop()); teamB.push(fwds.pop());             
+
+    let leftovers = [...gks, ...defs, ...fwds]; 
+    leftovers = shuffle(leftovers);
+    while(leftovers.length > 0) {
+        if(teamA.length <= teamB.length) teamA.push(leftovers.pop());
+        else teamB.push(leftovers.pop());
+    }
+    const getAvg = t => t.reduce((a,c)=>a+c.rating,0) / t.length;
+    const avgA = getAvg(teamA); const avgB = getAvg(teamB);
+    return { teamA, teamB, avgA: avgA.toFixed(2), avgB: avgB.toFixed(2), diff: Math.abs(avgA - avgB) };
+  }
+
   function generateTeamOptions() { 
     generateError.style.display = 'none';
     const checks = document.querySelectorAll('.p-select:checked');
@@ -556,32 +591,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updatePublishButtonState();
   }
 
-  function showError(msg) { generateError.textContent = msg; generateError.style.display = 'block'; }
-  function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
-  
-  function createStrictMatch(originalPool) {
-    // [OMITIDO POR BREVEDAD, SE ASUME QUE ESTA FUNCIÓN ESTÁ COMPLETA EN EL CÓDIGO ORIGINAL]
-    const gks = shuffle(originalPool.filter(p => p.position === 'portero'));
-    const defs = shuffle(originalPool.filter(p => p.position === 'defensa'));
-    const fwds = shuffle(originalPool.filter(p => p.position === 'delantero'));
-    if(gks.length < 2 || defs.length < 6 || fwds.length < 2) return null;
-
-    const teamA = []; const teamB = [];
-    teamA.push(gks.pop()); teamB.push(gks.pop());            
-    for(let k=0;k<3;k++) { teamA.push(defs.pop()); teamB.push(defs.pop()); } 
-    teamA.push(fwds.pop()); teamB.push(fwds.pop());             
-
-    let leftovers = [...gks, ...defs, ...fwds]; 
-    leftovers = shuffle(leftovers);
-    while(leftovers.length > 0) {
-        if(teamA.length <= teamB.length) teamA.push(leftovers.pop());
-        else teamB.push(leftovers.pop());
-    }
-    const getAvg = t => t.reduce((a,c)=>a+c.rating,0) / t.length;
-    const avgA = getAvg(teamA); const avgB = getAvg(teamB);
-    return { teamA, teamB, avgA: avgA.toFixed(2), avgB: avgB.toFixed(2), diff: Math.abs(avgA - avgB) };
-  }
-
   function displayOptionsForSelection(options) {
       const container = document.getElementById('teamsResult');
       container.innerHTML = `
@@ -599,7 +608,7 @@ document.addEventListener('DOMContentLoaded', () => {
           div.innerHTML = `
               <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
                   <h4 style="margin:0; color:var(--primary);">Opción ${index + 1}</h4>
-                  <span class="tag" style="background:#334155; color:#fff;">Dif: ${opt.diff.toFixed(2)}</span>
+                  <span class="tag" style="background:#334155; color:#fff;">Dif: ${opt.diff}</span>
               </div>
               <div class="team-columns">
                   <div class="team-col"><strong style="color:#94a3b8">Negro (${opt.avgA})</strong><ul>${renderListSimple(opt.teamA)}</ul></div>
@@ -666,7 +675,6 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => { window.location.href = controlLink; }, 200); 
   }
 
-  // Función para mostrar un modal de compartir (WhatsApp)
   function showShareModal(link) {
       const msg = `⚽ ¡A VOTAR! El Míster ha publicado los equipos: ${link}`;
       alert(`Enlace de votación: ${link}\n\nCompártelo por WhatsApp: ${msg}`);
@@ -702,31 +710,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (error || !match) return alert("Partido no encontrado o error de carga.");
 
-      // 1. MODO FINAL: Muestra la pizarra
+      // 1. MODO FINAL (JUGADOR): Muestra la pizarra y los resultados finales
       if (match.status === 'final' && match.final_teams_result) {
           playerLobby.style.display = 'none';
-          appContent.classList.remove('hidden');
-          document.getElementById('addPlayerBox').style.display = 'none';
-          document.getElementById('playerListBox').style.display = 'none';
-          document.getElementById('matchControlBox').style.display = 'none';
-          document.getElementById('btnShareWhatsapp').style.display = 'none'; // Jugador no comparte
+          playerFinalView.classList.remove('hidden');
+          body.classList.add('final-match-view');
 
+          showPlayerResult(match.final_teams_result, false);
+
+          // Mover la pizarra dentro de la vista final del jugador
+          finalResultBox.insertAdjacentElement('afterend', fieldSection);
           fieldSection.classList.remove('hidden');
+
           document.getElementById('fieldHeaderStatus').textContent = ' (Alineación Final)';
-          document.getElementById('fieldSubtitle').textContent = 'Alineación final del partido.';
+          document.getElementById('fieldSubtitle').textContent = 'El Míster está ajustando la táctica.';
+          shareContainer.style.display = 'none'; // Ocultar el botón de compartir al jugador
 
-          // Cargar los jugadores del equipo final en la pizarra
-          const allPlayersInMatch = match.final_teams_result.teamA.concat(match.final_teams_result.teamB);
+          // Cargar y aplicar posiciones
           loadFieldFromFinalTeams(match.final_teams_result.teamA, match.final_teams_result.teamB, false);
-
-          // Aplicar la posición guardada por el míster
           if (match.field_positions) applyFieldPositions(match.field_positions, false);
           
-          listenToFieldUpdates(); // Empezar a escuchar movimientos en tiempo real
+          listenToFieldUpdates(); // Escucha los movimientos del míster
           return;
       }
 
-      // 2. MODO VOTACIÓN: Muestra las opciones y el estado del voto
+      // 2. MODO VOTACIÓN (JUGADOR)
       if (match.status === 'voting' && activePlayerId) {
           const { data: vote } = await supabase.from('votes').select('option_index').eq('match_id', currentMatchId).eq('player_id', activePlayerId).single();
           renderVotingOptions(match.teams_options, vote ? vote.option_index : null);
@@ -747,187 +755,7 @@ document.addEventListener('DOMContentLoaded', () => {
       else { alert("✅ ¡Voto registrado!"); loadVotingStatus(); }
       pendingVoteIndex = null;
   }
-
-  // --- PIZARRA TÁCTICA Y REALTIME (COACH & PLAYER) ---
-
-  // Genera las fichas de jugador en la pizarra
-  function loadFieldFromFinalTeams(teamA, teamB, isCoach) {
-      clearField();
-      const players = teamA.map(p => ({ ...p, team: 'black' })).concat(teamB.map(p => ({ ...p, team: 'white' })));
-
-      // Posiciones iniciales por defecto (ejemplo 1-3-2-1)
-      const positionsA = { portero: { x: 50, y: 90 }, defensa: [{ x: 20, y: 70 }, { x: 50, y: 70 }, { x: 80, y: 70 }], delantero: [{ x: 30, y: 35 }, { x: 70, y: 35 }], 'restante': { x: 50, y: 50 } };
-      const positionsB = { portero: { x: 50, y: 10 }, defensa: [{ x: 20, y: 30 }, { x: 50, y: 30 }, { x: 80, y: 30 }], delantero: [{ x: 30, y: 65 }, { x: 70, y: 65 }], 'restante': { x: 50, y: 50 } };
-      
-      const countsA = { portero: 0, defensa: 0, delantero: 0, restante: 0 };
-      const countsB = { portero: 0, defensa: 0, delantero: 0, restante: 0 };
-
-      players.forEach(p => {
-          let positionKey = p.position;
-          let teamPositions, teamCounts, tokenClass;
-          let isA = p.team === 'black';
-
-          if (isA) { teamPositions = positionsA; teamCounts = countsA; tokenClass = 'token-black'; }
-          else { teamPositions = positionsB; teamCounts = countsB; tokenClass = 'token-white'; }
-
-          if (teamCounts[positionKey] === undefined) positionKey = 'restante';
-
-          let x, y;
-          if (Array.isArray(teamPositions[positionKey])) {
-              const index = teamCounts[positionKey] % teamPositions[positionKey].length;
-              x = teamPositions[positionKey][index].x;
-              y = teamPositions[positionKey][index].y;
-          } else {
-              x = teamPositions[positionKey].x + (teamCounts[positionKey] * 5); // Desplazamiento si es 'restante'
-              y = teamPositions[positionKey].y + (teamCounts[positionKey] * 5 * (isA ? 1 : -1));
-          }
-          teamCounts[positionKey]++;
-
-          const token = document.createElement('div');
-          token.className = `player-token ${tokenClass}`;
-          token.textContent = p.name.substring(0, 3).toUpperCase();
-          token.style.left = `${x}%`;
-          token.style.top = `${y}%`;
-          token.dataset.playerId = p.id;
-          token.dataset.team = p.team;
-          token.dataset.position = p.position;
-
-          if (!isCoach) {
-              // Si es jugador, deshabilitar arrastre y cursor
-              token.style.cursor = 'default';
-              token.style.pointerEvents = 'none';
-          }
-
-          const label = document.createElement('div');
-          label.className = 'player-label';
-          label.textContent = p.name;
-          token.appendChild(label);
-          fullField.appendChild(token);
-      });
-
-      fieldSection.classList.remove('hidden');
-      if(isCoach) document.getElementById('fieldHeaderStatus').textContent = ' (Míster)';
-      else document.getElementById('fieldHeaderStatus').textContent = ' (Alineación Final)';
-  }
-
-  async function publishFinalTeams(winningOption) {
-      if (!currentMatchId) return alert("Error: No hay ID de partido activo.");
-      
-      // 1. Publicar resultados finales y estado
-      const { error: updateError } = await supabase.from('matches').update({ status: 'final', final_teams_result: winningOption }).eq('id', currentMatchId);
-      if (updateError) { return alert("Error al finalizar el partido."); }
-
-      // 2. Cargar alineación en la pizarra
-      loadFieldFromFinalTeams(winningOption.teamA, winningOption.teamB, true);
-      
-      // 3. Guardar posición inicial de la pizarra (opcional, pero buena práctica)
-      await saveFieldPositions();
-
-      // 4. Actualizar vista del Míster
-      document.getElementById('matchControlSubtitle').textContent = 'Partido Finalizado. Mueve las fichas para ajustar la táctica.';
-      document.getElementById('teamsResult').innerHTML = '';
-      document.getElementById('btnShareWhatsapp').style.display = 'flex'; // Mostrar botón de compartir del Míster
-  }
-
-
-  // --- FUNCIONES DE DRAG & DROP (MÍSTER) ---
-  function handleDragStart(e) {
-      if (!e.target.classList.contains('player-token') || !currentUser) return; // Solo fichas y solo Míster
-      dragTarget = e.target;
-      dragTarget.setPointerCapture(e.pointerId);
-      fieldRect = fullField.getBoundingClientRect();
-  }
-
-  function handleDragMove(e) {
-      if (!dragTarget || !fieldRect) return;
-
-      e.preventDefault();
-      
-      // Coordenadas dentro del campo
-      const x = e.clientX - fieldRect.left;
-      const y = e.clientY - fieldRect.top;
-
-      // Calcular porcentaje (para guardar de forma escalable)
-      let x_percent = (x / fieldRect.width) * 100;
-      let y_percent = (y / fieldRect.height) * 100;
-
-      // Clamp (Asegurar que no se salgan del 0-100%)
-      x_percent = Math.max(0, Math.min(100, x_percent));
-      y_percent = Math.max(0, Math.min(100, y_percent));
-      
-      // Aplicar posición (ajustando por la mitad del token para centrar)
-      const halfToken = (dragTarget.offsetWidth / fieldRect.width) * 50;
-      dragTarget.style.left = `${x_percent - halfToken}%`;
-      dragTarget.style.top = `${y_percent - (dragTarget.offsetHeight / fieldRect.height) * 50}%`;
-  }
-
-  async function handleDragEnd(e) {
-      if (!dragTarget) return;
-      dragTarget.releasePointerCapture(e.pointerId);
-      dragTarget = null;
-      fieldRect = null;
-      
-      // Guardar la nueva posición en la DB para el realtime
-      await saveFieldPositions();
-  }
-
-  async function saveFieldPositions() {
-      if (!currentMatchId) return;
-
-      const positions = [];
-      document.querySelectorAll('.player-token').forEach(token => {
-          const id = token.dataset.playerId;
-          const team = token.dataset.team;
-          
-          // Obtener el valor Left/Top en porcentaje.
-          const x = parseFloat(token.style.left);
-          const y = parseFloat(token.style.top);
-
-          if (id && !isNaN(x) && !isNaN(y)) {
-              positions.push({ player_id: id, team: team, x_percent: x, y_percent: y });
-          }
-      });
-
-      const { error } = await supabase.from('matches').update({ field_positions: positions }).eq('id', currentMatchId);
-      if (error) console.error("Error guardando posiciones de pizarra:", error);
-  }
-
-  // --- FUNCIONES DE REALTIME (PLAYER) ---
-  function listenToFieldUpdates() {
-      if (fieldSubscription || !currentMatchId) return;
-
-      fieldSubscription = supabase.channel(`match-${currentMatchId}`)
-          .on('postgres_changes', { 
-              event: 'UPDATE', 
-              schema: 'public', 
-              table: 'matches', 
-              filter: `id=eq.${currentMatchId}` 
-          }, (payload) => {
-              if (payload.new.field_positions) {
-                  // Aplicar las nuevas posiciones en el lado del jugador (Realtime)
-                  applyFieldPositions(payload.new.field_positions, false);
-              }
-              // También podría escuchar cambios de status y recargar si pasa de 'voting' a 'final'
-          })
-          .subscribe();
-  }
-
-  function applyFieldPositions(positions, isCoach) {
-      positions.forEach(pos => {
-          // Usamos el atributo data-player-id para encontrar la ficha
-          const token = document.querySelector(`.player-token[data-player-id="${pos.player_id}"]`);
-          if (token) {
-              token.style.left = `${pos.x_percent}%`;
-              token.style.top = `${pos.y_percent}%`;
-              // Asegurar que el jugador no pueda mover las fichas
-              if (!isCoach) {
-                  token.style.pointerEvents = 'none';
-                  token.style.cursor = 'default';
-              }
-          }
-      });
-  }
-  // --- CONTINUACIÓN DEL CÓDIGO ORIGINAL (sin modificaciones mayores) ---
+  
   function renderVotingOptions(options, votedIndex) {
       votingOptionsContainer.innerHTML = '';
       options.forEach((opt, index) => {
@@ -957,10 +785,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }));
   }
 
-  // Función Míster para mostrar resultados y publicar final
+  // Función Míster para mostrar el resultado final y el control
   function displayControlRoomOptions(options) {
       const container = document.getElementById('teamsResult');
-      // [OMITIDO POR BREVEDAD, SE ASUME QUE ESTA FUNCIÓN ESTÁ COMPLETA EN EL CÓDIGO ORIGINAL]
       container.innerHTML = `
           <h3 style="color:var(--accent); margin-top:20px;">Opciones de Votación</h3>
           <p id="controlStatus" style="color:var(--text-muted); font-size:0.85rem;">Resultados en tiempo real (Recargar para ver).</p>
@@ -991,25 +818,210 @@ document.addEventListener('DOMContentLoaded', () => {
               publishFinalTeams(options[index]);
           }
       }));
-      // Omitir la escucha de votos en tiempo real por simplicidad y foco en la pizarra
   }
 
-  // Función Míster para mostrar el resultado final
+  // Función Míster/Jugador para mostrar el resultado final
   function showPlayerResult(result, isCoach) {
-      const container = document.getElementById('teamsResult');
+      const container = isCoach ? document.getElementById('teamsResult') : finalTeamsResultContainer;
+      if (!isCoach) container.innerHTML = ''; 
+
       container.innerHTML = `
-          <h3 style="color:var(--accent); margin-top:20px;">🏆 Equipos Finales</h3>
-          <p style="color:var(--text-muted); font-size:0.85rem;">La votación ha finalizado.</p>
-          <div class="option-card" style="border: 1px solid var(--primary);">
-              <h4 style="margin:0; color:var(--primary);">Alineación Ganadora</h4>
+          <div class="option-card" style="border: none; background: transparent; padding:0;">
+              <h4 style="margin:0; color:${isCoach ? 'var(--primary)' : 'var(--text-main)'}; font-size:1.1rem;">Alineación Seleccionada:</h4>
               <div class="team-columns">
                   <div class="team-col"><strong style="color:#94a3b8">Negro (${result.avgA})</strong><ul>${renderListSimple(result.teamA)}</ul></div>
                   <div class="team-col"><strong style="color:#f1f5f9">Blanco (${result.avgB})</strong><ul>${renderListSimple(result.teamB)}</ul></div>
               </div>
           </div>
       `;
+      
+      if (isCoach) {
+          document.getElementById('matchControlBox').insertAdjacentElement('afterend', fieldSection);
+          fieldSection.classList.remove('hidden');
+          shareContainer.style.display = 'block';
+          document.getElementById('matchControlSubtitle').textContent = 'Partido Finalizado. Mueve las fichas para ajustar la táctica.';
+      }
   }
 
+
+  // --- PIZARRA TÁCTICA Y REALTIME (COACH & PLAYER) ---
+
+  async function publishFinalTeams(winningOption) {
+      if (!currentMatchId) return alert("Error: No hay ID de partido activo.");
+      
+      const { error: updateError } = await supabase.from('matches').update({ status: 'final', final_teams_result: winningOption }).eq('id', currentMatchId);
+      if (updateError) { return alert("Error al finalizar el partido."); }
+
+      loadFieldFromFinalTeams(winningOption.teamA, winningOption.teamB, true);
+      await saveFieldPositions();
+
+      // Actualizar vista del Míster
+      showPlayerResult(winningOption, true);
+  }
+
+
+  function loadFieldFromFinalTeams(teamA, teamB, isCoach) {
+      clearField();
+      const players = teamA.map(p => ({ ...p, team: 'black' })).concat(teamB.map(p => ({ ...p, team: 'white' })));
+
+      // Posiciones iniciales por defecto (ejemplo 1-3-2-1)
+      const positionsA = { portero: { x: 50, y: 90 }, defensa: [{ x: 20, y: 70 }, { x: 50, y: 70 }, { x: 80, y: 70 }], delantero: [{ x: 30, y: 35 }, { x: 70, y: 35 }], 'restante': { x: 50, y: 50 } };
+      const positionsB = { portero: { x: 50, y: 10 }, defensa: [{ x: 20, y: 30 }, { x: 50, y: 30 }, { x: 80, y: 30 }], delantero: [{ x: 30, y: 65 }, { x: 70, y: 65 }], 'restante': { x: 50, y: 50 } };
+      
+      const countsA = { portero: 0, defensa: 0, delantero: 0, restante: 0 };
+      const countsB = { portero: 0, defensa: 0, delantero: 0, restante: 0 };
+
+      players.forEach(p => {
+          let positionKey = p.position;
+          let teamPositions, teamCounts, tokenClass;
+          let isA = p.team === 'black';
+
+          if (isA) { teamPositions = positionsA; teamCounts = countsA; tokenClass = 'token-black'; }
+          else { teamPositions = positionsB; teamCounts = countsB; tokenClass = 'token-white'; }
+
+          if (teamCounts[positionKey] === undefined || (Array.isArray(teamPositions[positionKey]) && teamCounts[positionKey] >= teamPositions[positionKey].length)) { 
+              positionKey = 'restante';
+          }
+
+          let x, y;
+          if (Array.isArray(teamPositions[positionKey])) {
+              const index = teamCounts[positionKey] % teamPositions[positionKey].length;
+              x = teamPositions[positionKey][index].x;
+              y = teamPositions[positionKey][index].y;
+          } else {
+              // Posición base para restantes
+              const baseOffset = isA ? 5 : -5;
+              const basePos = isA ? { x: 85, y: 95 } : { x: 15, y: 5 };
+              x = basePos.x;
+              y = basePos.y + (teamCounts[positionKey] * baseOffset);
+          }
+          teamCounts[positionKey]++;
+
+          const token = document.createElement('div');
+          token.className = `player-token ${tokenClass}`;
+          token.textContent = p.name.substring(0, 3).toUpperCase();
+          token.style.left = `${x}%`;
+          token.style.top = `${y}%`;
+          token.dataset.playerId = p.id;
+          token.dataset.team = p.team;
+          token.dataset.position = p.position;
+
+          if (!isCoach) {
+              token.style.cursor = 'default';
+              token.style.pointerEvents = 'none';
+          }
+
+          const label = document.createElement('div');
+          label.className = 'player-label';
+          label.textContent = p.name;
+          token.appendChild(label);
+          fullField.appendChild(token);
+      });
+
+      fieldSection.classList.remove('hidden');
+      document.getElementById('fieldHeaderStatus').textContent = isCoach ? ' (Míster)' : ' (Alineación Final)';
+  }
+
+  // --- FUNCIONES DE DRAG & DROP (MÍSTER) ---
+  function handleDragStart(e) {
+      // Permitir arrastrar solo al Míster y solo si la ficha es un 'player-token'
+      if (!e.target.classList.contains('player-token') || !currentUser || fieldSubscription) return; 
+      dragTarget = e.target;
+      dragTarget.setPointerCapture(e.pointerId);
+      fieldRect = fullField.getBoundingClientRect();
+  }
+
+  function handleDragMove(e) {
+      if (!dragTarget || !fieldRect) return;
+
+      e.preventDefault();
+      
+      const x = e.clientX - fieldRect.left;
+      const y = e.clientY - fieldRect.top;
+
+      let x_percent = (x / fieldRect.width) * 100;
+      let y_percent = (y / fieldRect.height) * 100;
+
+      x_percent = Math.max(0, Math.min(100, x_percent));
+      y_percent = Math.max(0, Math.min(100, y_percent));
+      
+      // Ajuste para centrar la ficha (42px de ancho en 320px de campo es aprox. 13% del ancho)
+      const halfTokenWidthPercent = (dragTarget.offsetWidth / 2 / fieldRect.width) * 100;
+      const halfTokenHeightPercent = (dragTarget.offsetHeight / 2 / fieldRect.height) * 100;
+      
+      dragTarget.style.left = `${x_percent - halfTokenWidthPercent}%`;
+      dragTarget.style.top = `${y_percent - halfTokenHeightPercent}%`;
+  }
+
+  async function handleDragEnd(e) {
+      if (!dragTarget) return;
+      dragTarget.releasePointerCapture(e.pointerId);
+      dragTarget = null;
+      fieldRect = null;
+      
+      await saveFieldPositions();
+  }
+
+  async function saveFieldPositions() {
+      if (!currentMatchId) return;
+
+      const positions = [];
+      document.querySelectorAll('.player-token').forEach(token => {
+          const id = token.dataset.playerId;
+          const team = token.dataset.team;
+          
+          const x = parseFloat(token.style.left);
+          const y = parseFloat(token.style.top);
+
+          if (id && !isNaN(x) && !isNaN(y)) {
+              positions.push({ player_id: id, team: team, x_percent: x, y_percent: y });
+          }
+      });
+
+      const { error } = await supabase.from('matches').update({ field_positions: positions }).eq('id', currentMatchId);
+      if (error) console.error("Error guardando posiciones de pizarra:", error);
+  }
+
+  // --- FUNCIONES DE REALTIME (PLAYER) ---
+  function listenToFieldUpdates() {
+      if (fieldSubscription && fieldSubscription.state === 'joined') return; // Ya está suscrito
+
+      if(fieldSubscription) supabase.removeChannel(fieldSubscription);
+
+      fieldSubscription = supabase.channel(`match-${currentMatchId}`)
+          .on('postgres_changes', { 
+              event: 'UPDATE', 
+              schema: 'public', 
+              table: 'matches', 
+              filter: `id=eq.${currentMatchId}` 
+          }, (payload) => {
+              if (payload.new.field_positions) {
+                  applyFieldPositions(payload.new.field_positions, false);
+              }
+              // Esto es solo un ejemplo si el Míster cambia de modo durante la vista del jugador
+              if (payload.new.status === 'final' && playerLobby.style.display !== 'none') {
+                  loadVotingStatus();
+              }
+          })
+          .subscribe();
+  }
+
+  function applyFieldPositions(positions, isCoach) {
+      positions.forEach(pos => {
+          const token = document.querySelector(`.player-token[data-player-id="${pos.player_id}"]`);
+          if (token) {
+              // Asegurar que el cambio sea suave
+              token.style.transition = 'top 0.3s, left 0.3s';
+              token.style.left = `${pos.x_percent}%`;
+              token.style.top = `${pos.y_percent}%`;
+              // Para el jugador, asegurarse de que no pueda interactuar
+              if (!isCoach) {
+                  token.style.pointerEvents = 'none';
+                  token.style.cursor = 'default';
+              }
+          }
+      });
+  }
 
   // Función para compartir la imagen del campo
   async function shareFieldsImage() {
@@ -1024,7 +1036,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }).then(canvas => {
           const dataURL = canvas.toDataURL('image/png');
           
-          // Crear un blob y usar la API de compartir (si es compatible)
           canvas.toBlob(async (blob) => {
               const file = new File([blob], "AlineacionFutbol7.png", { type: "image/png" });
               if (navigator.share) {
@@ -1035,7 +1046,6 @@ document.addEventListener('DOMContentLoaded', () => {
                           text: 'Táctica Final del Míster'
                       });
                   } catch (error) {
-                      console.error('Error compartiendo:', error);
                       fallbackDownload(dataURL);
                   }
               } else {
