@@ -22,12 +22,12 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-/* --- ESTILOS (Sin Cambios) --- */
+/* --- ESTILOS (Mantener estilos anteriores) --- */
 :root { 
   --bg-dark: #0f172a;
   --bg-card: rgba(30, 41, 59, 0.7);
-  --primary: #06b6d4;      /* Cian */
-  --accent: #a3e635;       /* Lima */
+  --primary: #06b6d4;
+  --accent: #a3e635;
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
   --whatsapp: #25D366;
@@ -208,8 +208,8 @@ button.outline {
 </div>
 
 <div class="box hidden" id="playerLobby" style="text-align: center; border: 1px solid var(--accent);">
-  <h2 style="color: var(--accent);">⚽ Confirmar Asistencia</h2>
-  <p id="lobbyStatus" style="font-size:0.9rem;">Introduce tu código de jugador y el Míster te reconocerá.</p>
+  <h2 style="color: var(--accent);">🗳️ Votación de Equipos</h2>
+  <p id="lobbyStatus" style="font-size:0.9rem;">Introduce tu código y vota por el mejor equilibrio.</p>
   
   <div id="playerAuthForm">
     <input id="playerCodeInput" placeholder="Tu Código (Ej. LAMN87)" style="text-align:center;">
@@ -217,16 +217,21 @@ button.outline {
 
     <div id="playerFound" class="hidden" style="margin-top:15px; background:rgba(163, 230, 53, 0.1); padding:15px; border-radius:12px;">
       <p style="color:#0f172a;">👋 ¡Hola, <strong id="foundPlayerName" style="color:#1e293b;">Jugador</strong>!</p>
-      <p style="font-size:0.8rem; color:#0f172a;">Posición: <strong id="foundPlayerPos">N/A</strong>. Media: <strong id="foundPlayerRating">N/A</strong>.</p>
-      <button id="btnConfirmAttendance" class="primary" style="background: var(--accent); color: #000; font-size:1.1rem; margin-top:10px;">✅ ¡Confirmo Asistencia!</button>
+      <button id="btnEnterVoting" class="primary" style="background: var(--accent); color: #000; font-size:1.1rem; margin-top:10px;">➡️ Entrar a Votar</button>
     </div>
   </div>
 
+  <div id="votingView" class="hidden">
+    <h3 style="color: var(--primary);">Opciones del Míster</h3>
+    <p id="votingHeader" style="font-size:0.85rem; color:var(--text-muted);">¿Cuál crees que es la alineación más justa?</p>
+    <div id="votingOptionsContainer"></div>
+  </div>
+
   <div id="waitingScreen" class="hidden">
-    <h3>✅ Estás dentro</h3>
-    <p>Esperando la alineación del Míster...</p>
+    <h3>✅ Voto Registrado</h3>
+    <p>Gracias. Esperando que el Míster publique la alineación final...</p>
     <div class="field-container" style="height: 200px; justify-content:center;">
-       <div class="rating-badge" style="width:60px; height:60px; font-size:1.5rem; border-color:var(--accent);">⚽</div>
+       <div class="rating-badge" style="width:60px; height:60px; font-size:1.5rem; border-color:var(--accent);">🗳️</div>
     </div>
   </div>
 </div>
@@ -236,9 +241,9 @@ button.outline {
   
   <div class="box" style="background: linear-gradient(45deg, #1e293b, #0f172a); border: 1px solid var(--whatsapp);">
       <h3 style="color: var(--whatsapp); margin:0;">📡 Partido en Vivo</h3>
-      <p style="font-size:0.8rem; color:#94a3b8;">Crea un enlace para que los jugadores se apunten solos. Usa los jugadores de la lista de abajo.</p>
+      <p style="font-size:0.8rem; color:#94a3b8;">Crea un enlace para que los jugadores voten por los equipos.</p>
       <button id="btnStartLive" class="whatsapp">🔗 Crear Sala & Copiar Link</button>
-      <p id="liveLinkMsg" style="font-size:0.8rem; color:var(--accent); display:none; margin-top:10px;">¡Enlace copiado! Esperando jugadores...</p>
+      <p id="liveLinkMsg" style="font-size:0.8rem; color:var(--accent); display:none; margin-top:10px;">¡Enlace copiado! Esperando votaciones...</p>
   </div>
   
   <div class="box">
@@ -270,10 +275,10 @@ button.outline {
   <div class="box" style="border: 1px solid var(--primary);">
     <h2 style="color: var(--primary);">⚡ Generar Partido</h2>
     <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:15px;">
-        <strong>Regla F7:</strong> Se asignarán obligatoriamente 1 Portero, 3 Defensas y 1 Delantero por equipo. El resto se rellena equilibrando la media.
+        Genera al menos 3 opciones para que los jugadores voten.
     </p>
     
-    <button id="btnGenerateTeams" class="primary" style="font-size: 1.1rem; box-shadow: 0 0 20px rgba(6,182,212,0.3);">🎲 Crear Equipos</button>
+    <button id="btnGenerateTeams" class="primary" style="font-size: 1.1rem; box-shadow: 0 0 20px rgba(6,182,212,0.3);">🎲 Crear Opciones de Voto</button>
     <div id="generateError" class="error-msg"></div>
 
     <div id="teamsResult" style="margin-top:20px;"></div>
@@ -311,12 +316,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let allPlayers = [];
   let currentUser = null;
-  let currentMatchId = null; // ID del partido live
-  let activePlayerId = null; // ID del jugador logueado (modo jugador)
-  let activePlayerData = null; // Ficha del jugador
+  let currentMatchId = null; 
+  let activePlayerId = null; 
+  let activePlayerData = null; 
+  let currentOptions = []; // Para guardar las opciones de voto en el lado del míster
 
   const urlParams = new URLSearchParams(window.location.search);
-  const matchLinkID = urlParams.get('match_id'); // Parámetro en la URL para el modo jugador
+  const matchLinkID = urlParams.get('match_id'); 
 
   // --- ELEMENTOS ---
   const authBox = document.getElementById('authBox');
@@ -325,13 +331,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const playersListEl = document.getElementById('playersList');
   const generateError = document.getElementById('generateError');
   const btnShare = document.getElementById('btnShareWhatsapp');
-  const fullField = document.getElementById('fullField'); // Campo del míster
+  const fullField = document.getElementById('fullField'); 
 
   // ELEMENTOS NUEVOS (Player)
   const playerLobby = document.getElementById('playerLobby');
   const playerCodeInput = document.getElementById('playerCodeInput');
   const btnAuthPlayer = document.getElementById('btnAuthPlayer');
-  const btnConfirmAttendance = document.getElementById('btnConfirmAttendance');
+  const btnEnterVoting = document.getElementById('btnEnterVoting'); // CAMBIADO
   
   // ELEMENTOS NUEVOS (Coach)
   const btnStartLive = document.getElementById('btnStartLive');
@@ -348,18 +354,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // NUEVOS EVENTOS LIVE
   if(btnStartLive) btnStartLive.addEventListener('click', createLiveMatch);
   if(btnAuthPlayer) btnAuthPlayer.addEventListener('click', searchPlayerByCode);
-  if(btnConfirmAttendance) btnConfirmAttendance.addEventListener('click', confirmAttendance);
+  if(btnEnterVoting) btnEnterVoting.addEventListener('click', enterVoting); // NUEVO EVENTO
+
   
   // --- INICIALIZACIÓN: MODO COACH o MODO JUGADOR ---
   if (matchLinkID) {
-      // MODO JUGADOR: Si hay ID en la URL
       authBox.style.display = 'none';
       appContent.style.display = 'none';
       playerLobby.classList.remove('hidden');
       currentMatchId = matchLinkID;
-      listenToMatchStatus();
+      // La escucha de status (listenToMatchStatus) se inicializa en enterVoting
   } else {
-      // MODO ENTRENADOR: Comportamiento normal (se inicializa después del login)
       supabase.auth.getSession().then(({ data: { session } }) => {
           if (session) {
               currentUser = session.user;
@@ -422,10 +427,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!name || !rating) return alert('Datos incompletos');
     
-    const playerCode = generatePlayerCode(name); // <-- Nuevo código
+    const playerCode = generatePlayerCode(name); 
     const newPlayer = { user_id: currentUser.id, name, position, rating, player_code: playerCode };
 
-    // 1. Insertar en Supabase
     const { data, error } = await supabase.from('players').insert([newPlayer]).select();
     
     if (error) {
@@ -434,11 +438,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
     
-    // 2. Añadir a lista local
     if(data && data.length) {
         allPlayers.push(data[0]); 
-        
-        // 3. Limpiar y renderizar
         nameIn.value = ''; 
         skillIn.value = '';
         renderList();
@@ -508,10 +509,9 @@ document.addEventListener('DOMContentLoaded', () => {
   async function createLiveMatch() {
     if (!currentUser) return alert("Inicia sesión primero");
 
-    // 1. Crear partido en BBDD
     const { data, error } = await supabase
         .from('matches')
-        .insert([{ coach_id: currentUser.id, status: 'waiting' }])
+        .insert([{ coach_id: currentUser.id, status: 'created' }])
         .select()
         .single();
 
@@ -519,39 +519,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     currentMatchId = data.id;
     
-    // 2. Generar Link
     const link = `${window.location.origin}${window.location.pathname}?match_id=${currentMatchId}`;
     
-    // 3. Copiar al portapapeles
     navigator.clipboard.writeText(link).then(() => {
         document.getElementById('liveLinkMsg').style.display = 'block';
         document.getElementById('liveLinkMsg').textContent = "Link copiado: " + link;
     });
 
-    // 4. Limpiar lista actual y poner modo escucha
-    allPlayers = []; 
-    renderList();
-    
-    // 5. Suscribirse a nuevos jugadores en tiempo real (por ID)
-    supabase
-    .channel('room1')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'match_participants', filter: `match_id=eq.${currentMatchId}` }, async payload => {
-        // Buscamos la ficha completa del jugador que acaba de confirmar
-        const { data: playerDetails } = await supabase.from('players').select('*').eq('id', payload.new.player_id).single();
-        if(playerDetails) {
-            // Revisa si ya está en la lista (para evitar duplicados por errores de tiempo real)
-            if (!allPlayers.find(p => p.id === playerDetails.id)) {
-                allPlayers.push(playerDetails); 
-                renderList();
-            }
-        }
-    })
-    .subscribe();
-    
-    alert("¡Sala creada! Manda el link por WhatsApp. Los jugadores irán apareciendo en la lista automáticamente.");
+    // En este flujo, no escuchamos asistencia, solo el resultado final
+    alert("¡Sala creada! Manda el link por WhatsApp. Ahora genera las opciones de voto.");
   }
 
-  // --- GENERACIÓN DE EQUIPOS (COACH) Y ENVÍO DEL RESULTADO ---
+  // --- GENERACIÓN DE EQUIPOS (COACH) Y ENVÍO DE OPCIONES ---
   function generateTeamOptions() { 
     generateError.style.display = 'none';
     const checks = document.querySelectorAll('.p-select:checked');
@@ -585,27 +564,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     variations.sort((a, b) => a.diff - b.diff); 
     const top3 = variations.slice(0, 3);
-    
+    currentOptions = top3; // Guardar las opciones para la selección final
+
     if (top3.length === 0) { showError("Error generando combinaciones."); return; }
     displayOptions(top3);
 
-    // ENVIAR RESULTADO A LA BASE DE DATOS (¡NUEVO!)
+    // ENVIAR OPCIONES A LA BASE DE DATOS PARA QUE EL JUGADOR VOTE (¡NUEVO!)
     if (currentMatchId && top3.length > 0) {
-        const bestOption = top3[0];
-        
         supabase
             .from('matches')
             .update({ 
-                status: 'finished', 
-                teams_result: bestOption 
+                status: 'voting', // Nuevo estado: Votación
+                teams_options: top3, // Guardamos las 3 opciones
+                final_teams_result: null // Limpiamos el resultado final
             })
             .eq('id', currentMatchId)
-            .then(() => console.log("Resultado enviado a jugadores en tiempo real."));
+            .then(() => console.log("Opciones enviadas a jugadores para votación."));
+    }
+    
+    if (currentMatchId) {
+        // Iniciar la escucha de votos si hay un partido live activo
+        listenToVotes();
     }
   }
 
   function showError(msg) { generateError.textContent = msg; generateError.style.display = 'block'; }
-
+  function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
+  
   function createStrictMatch(originalPool) {
     const gks = shuffle(originalPool.filter(p => p.position === 'portero'));
     const defs = shuffle(originalPool.filter(p => p.position === 'defensa'));
@@ -630,15 +615,68 @@ document.addEventListener('DOMContentLoaded', () => {
 
     return { teamA, teamB, avgA: avgA.toFixed(2), avgB: avgB.toFixed(2), diff: Math.abs(avgA - avgB) };
   }
-  
-  function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
+  // --- VOTOS EN TIEMPO REAL (COACH) ---
+  let allVotes = [];
+  function listenToVotes() {
+      // Escucha solo votos para el partido actual
+      supabase
+      .channel('vote-room')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'match_votes', filter: `match_id=eq.${currentMatchId}` }, payload => {
+          allVotes.push(payload.new);
+          updateVoteDisplay();
+      })
+      .subscribe();
+      
+      // Cargar votos existentes al iniciar la escucha
+      supabase.from('match_votes').select('option_index').eq('match_id', currentMatchId)
+          .then(({ data }) => {
+              allVotes = data || [];
+              updateVoteDisplay();
+          });
+  }
+  
+  function updateVoteDisplay() {
+      if (currentOptions.length === 0) return;
+      
+      const voteCounts = {};
+      currentOptions.forEach((_, index) => voteCounts[index] = 0);
+      allVotes.forEach(vote => {
+          if (vote.option_index !== undefined) {
+              voteCounts[vote.option_index]++;
+          }
+      });
+      
+      const totalVotes = allVotes.length;
+      
+      currentOptions.forEach((opt, index) => {
+          const votes = voteCounts[index] || 0;
+          const percentage = totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : 0;
+          
+          const card = document.getElementById(`option-card-${index}`);
+          if (card) {
+              // Encuentra el botón o añade un nuevo elemento para mostrar los votos
+              let voteStatusEl = card.querySelector('.vote-status');
+              if (!voteStatusEl) {
+                  voteStatusEl = document.createElement('p');
+                  voteStatusEl.className = 'vote-status';
+                  voteStatusEl.style.cssText = 'margin:10px 0 0 0; font-weight:bold; color:var(--accent);';
+                  card.insertBefore(voteStatusEl, card.querySelector('.select-opt-btn'));
+              }
+              voteStatusEl.innerHTML = `Votos: ${votes} (${percentage}%)`;
+          }
+      });
+  }
+
+
+  // RENDERIZADO DE OPCIONES (COACH)
   function displayOptions(options) {
     const container = document.getElementById('teamsResult');
     container.innerHTML = '';
     options.forEach((opt, index) => {
         const div = document.createElement('div');
         div.className = 'option-card';
+        div.id = `option-card-${index}`; // Añadimos ID para actualizar votos
         div.innerHTML = `
             <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px; margin-bottom:10px;">
                 <h4 style="margin:0; color:var(--primary);">Opción ${index + 1}</h4>
@@ -648,28 +686,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="team-col"><strong style="color:#94a3b8">Negro (${opt.avgA})</strong><ul>${renderListSimple(opt.teamA)}</ul></div>
                 <div class="team-col"><strong style="color:#f1f5f9">Blanco (${opt.avgB})</strong><ul>${renderListSimple(opt.teamB)}</ul></div>
             </div>
-            <button class="outline select-opt-btn" style="margin-top:15px; width:100%; border-color:var(--accent); color:var(--accent);">Ver en Pizarra</button>
+            <button class="outline select-opt-btn" data-option="${index}" style="margin-top:15px; width:100%; border-color:var(--accent); color:var(--accent);">Publicar Equipo Final</button>
         `;
-        div.querySelector('.select-opt-btn').addEventListener('click', () => {
-            document.getElementById('fieldSection').classList.remove('hidden');
-            
-            fullField.querySelectorAll('.player-token').forEach(e => e.remove());
-            
-            drawTeamOnUnifiedField(opt.teamA, 'token-black', 'bottom', fullField); // Se pasa fullField
-            drawTeamOnUnifiedField(opt.teamB, 'token-white', 'top', fullField);   // Se pasa fullField
-
-            setTimeout(() => { document.getElementById('fieldSection').scrollIntoView({behavior: "smooth"}); }, 100);
+        div.querySelector('.select-opt-btn').addEventListener('click', (e) => {
+            const index = parseInt(e.currentTarget.dataset.option);
+            finalizeTeam(index);
         });
         container.appendChild(div);
     });
   }
-  function renderListSimple(t) {
-    const order={portero:0,defensa:1,delantero:2};
-    return [...t].sort((a,b)=>order[a.position]-order[b.position]).map(p=>`<li><span>${p.name}</span><span style="font-size:0.7rem;opacity:0.7;">${p.position.substring(0,3).toUpperCase()}</span></li>`).join('');
+  
+  // PUBLICAR RESULTADO FINAL (COACH)
+  async function finalizeTeam(winningOptionIndex) {
+      if (!currentMatchId || currentOptions.length === 0) return alert("Error: No hay opciones generadas o ID de partido.");
+      
+      const winningOption = currentOptions[winningOptionIndex];
+      
+      const { error } = await supabase
+          .from('matches')
+          .update({ 
+              status: 'final', 
+              final_teams_result: winningOption 
+          })
+          .eq('id', currentMatchId);
+          
+      if (error) return console.error("Error al finalizar el equipo:", error);
+
+      alert(`¡Opción ${winningOptionIndex + 1} publicada como equipo final!`);
+      // Simular clic en el botón para pintar en pizarra (opcional)
+      document.getElementById(`option-card-${winningOptionIndex}`).querySelector('.select-opt-btn').click();
   }
 
 
-  // --- MODO JUGADOR: AUTENTICACIÓN Y ASISTENCIA (¡NUEVO!) ---
+  function renderListSimple(t) {
+    const order={portero:0,defensa:1,delantero:2};
+    // No mostramos rating ni posición en esta lista, solo nombre
+    return [...t].sort((a,b)=>order[a.position]-order[b.position]).map(p=>`<li><span>${p.name}</span></li>`).join('');
+  }
+
+  // --- MODO JUGADOR: AUTENTICACIÓN Y VOTACIÓN (¡NUEVO BLOQUE!) ---
   async function searchPlayerByCode() {
       const code = playerCodeInput.value.trim().toUpperCase();
       if (!code) return alert("Introduce tu código de jugador.");
@@ -690,91 +745,168 @@ document.addEventListener('DOMContentLoaded', () => {
       activePlayerId = data.id;
 
       document.getElementById('foundPlayerName').textContent = data.name;
-      document.getElementById('foundPlayerPos').textContent = data.position;
-      document.getElementById('foundPlayerRating').textContent = data.rating;
+      // IMPORTANTE: NO MOSTRAMOS foundPlayerPos ni foundPlayerRating
+      
       document.getElementById('playerFound').classList.remove('hidden');
       playerCodeInput.disabled = true;
       btnAuthPlayer.disabled = true;
   }
 
-  async function confirmAttendance() {
-      if (!activePlayerId || !currentMatchId) return alert("Error: Falta el código de partido o tu código de jugador.");
+  async function enterVoting() {
+      document.getElementById('playerAuthForm').classList.add('hidden');
+      document.getElementById('votingView').classList.remove('hidden');
+      document.getElementById('lobbyStatus').textContent = "Selecciona tu opción favorita.";
+
+      // 1. Cargar las opciones de voto y suscribirse para el resultado final
+      await fetchVotingOptions();
+      listenToMatchStatus();
+  }
+
+  async function fetchVotingOptions() {
+      const { data, error } = await supabase
+          .from('matches')
+          .select('teams_options')
+          .eq('id', currentMatchId)
+          .single();
       
+      const container = document.getElementById('votingOptionsContainer');
+      container.innerHTML = '';
+
+      if (error || !data || !data.teams_options || data.teams_options.length === 0) {
+          container.innerHTML = '<p style="color:#f87171;">El Míster aún no ha publicado las opciones de voto. Esperando...</p>';
+          // Configurar una escucha para cuando las opciones se publiquen
+          listenToMatchStatus(true); 
+          return;
+      }
+      
+      // Comprobar si ya votó
+      const { data: voteData } = await supabase
+          .from('match_votes')
+          .select('id')
+          .eq('match_id', currentMatchId)
+          .eq('player_id', activePlayerId)
+          .single();
+          
+      if (voteData) {
+          document.getElementById('votingView').classList.add('hidden');
+          document.getElementById('waitingScreen').classList.remove('hidden');
+          document.getElementById('waitingScreen p').textContent = "Ya habías votado. Esperando que el Míster publique la alineación final...";
+          return;
+      }
+
+      renderVotingOptions(data.teams_options);
+  }
+
+  function renderVotingOptions(options) {
+      const container = document.getElementById('votingOptionsContainer');
+      container.innerHTML = '';
+      
+      options.forEach((opt, index) => {
+          const div = document.createElement('div');
+          div.className = 'option-card';
+          div.innerHTML = `
+              <h4 style="margin:0; color:var(--primary);">Opción ${index + 1}</h4>
+              <p style="font-size:0.8rem; color:var(--text-muted);">Diferencia de media: <span class="tag" style="background:#334155; color:#fff;">${opt.diff.toFixed(2)}</span></p>
+              
+              <div class="team-columns">
+                  <div class="team-col"><strong style="color:#94a3b8">Negro (${opt.avgA})</strong><ul>${renderListSimple(opt.teamA)}</ul></div>
+                  <div class="team-col"><strong style="color:#f1f5f9">Blanco (${opt.avgB})</strong><ul>${renderListSimple(opt.teamB)}</ul></div>
+              </div>
+
+              <button class="primary vote-btn" data-option="${index}" style="margin-top:15px; width:100%; font-size: 1.1rem;">🗳️ Votar por esta</button>
+          `;
+          container.appendChild(div);
+      });
+
+      document.querySelectorAll('.vote-btn').forEach(btn => {
+          btn.addEventListener('click', handleVote);
+      });
+  }
+
+  async function handleVote(e) {
+      const optionIndex = parseInt(e.currentTarget.dataset.option);
+      
+      if (!activePlayerId || !currentMatchId) return alert("Error de sesión. Vuelve a introducir tu código.");
+
       const { error } = await supabase
-          .from('match_participants')
+          .from('match_votes')
           .insert([{ 
               match_id: currentMatchId, 
               player_id: activePlayerId,
-              name: activePlayerData.name // Nombre para lista rápida del míster
+              option_index: optionIndex
           }]);
 
-      if(error && error.code !== '23505') { 
+      if(error && error.code === '23505') { 
+          // Ya votó
+      } else if (error) {
           console.error(error);
-          alert("Error al confirmar asistencia. Ya estabas dentro o revisa la consola.");
-      } else {
-          document.getElementById('playerAuthForm').classList.add('hidden');
-          document.getElementById('waitingScreen').classList.remove('hidden');
-          document.getElementById('lobbyStatus').textContent = "✅ Asistencia Confirmada. Esperando alineación del Míster.";
-      }
+          alert("Error al registrar el voto.");
+          return;
+      } 
+      
+      // Voto exitoso o ya votado: pasar a la pantalla de espera
+      document.getElementById('votingView').classList.add('hidden');
+      document.getElementById('waitingScreen').classList.remove('hidden');
   }
 
-  function listenToMatchStatus() {
-      // El jugador escucha cambios en la tabla 'matches' para ver el resultado
+  function listenToMatchStatus(isInitialFetch = false) {
       supabase
       .channel('match-updates')
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'matches', filter: `id=eq.${currentMatchId}` }, payload => {
           const matchData = payload.new;
-          if (matchData.status === 'finished' && matchData.teams_result) {
-              // ¡EL MÍSTER HA HECHO LOS EQUIPOS!
-              showPlayerResult(matchData.teams_result);
+          
+          if (matchData.status === 'final' && matchData.final_teams_result) {
+              // El míster ha publicado el resultado final
+              showPlayerResult(matchData.final_teams_result);
+          } else if (isInitialFetch && matchData.status === 'voting' && matchData.teams_options) {
+               // El míster acaba de publicar las opciones de voto (cuando el jugador estaba esperando)
+              fetchVotingOptions();
           }
       })
       .subscribe();
   }
 
   function showPlayerResult(resultData) {
-      // Ocultar lobby y mostrar campo (el coach content tiene que estar visible para usar la función de pizarra)
       playerLobby.style.display = 'none';
       appContent.classList.remove('hidden');
       
-      // Ocultar paneles de administración para el jugador
       document.querySelectorAll('.box').forEach(b => {
          if(b.id !== 'fieldSection') b.style.display = 'none';
       });
       
-      // Mostrar campo y pintar fichas
       const fieldSection = document.getElementById('fieldSection');
       fieldSection.classList.remove('hidden');
       fieldSection.style.display = 'block';
       
       const fieldPlaceholder = document.getElementById('fullField');
       
-      // Limpiar y dibujar
       fieldPlaceholder.querySelectorAll('.player-token').forEach(e => e.remove());
-      drawTeamOnUnifiedField(resultData.teams_result.teamA, 'token-black', 'bottom', fieldPlaceholder);
-      drawTeamOnUnifiedField(resultData.teams_result.teamB, 'token-white', 'top', fieldPlaceholder);
+      drawTeamOnUnifiedField(resultData.teamA, 'token-black', 'bottom', fieldPlaceholder);
+      drawTeamOnUnifiedField(resultData.teamB, 'token-white', 'top', fieldPlaceholder);
       
-      // Determinar equipo
-      const isInTeamA = resultData.teams_result.teamA.some(p => p.id === activePlayerId);
-      const isInTeamB = resultData.teams_result.teamB.some(p => p.id === activePlayerId);
+      const isInTeamA = resultData.teamA.some(p => p.id === activePlayerId);
+      const isInTeamB = resultData.teamB.some(p => p.id === activePlayerId);
 
       let teamColor = 'SUPLENTE (no convocado)';
       if (isInTeamA) { teamColor = 'NEGRO'; }
       else if (isInTeamB) { teamColor = 'BLANCO'; }
       
-      // Mostrar mensaje de resultado
-      const resultMessage = document.createElement('h3');
-      resultMessage.style.textAlign = 'center';
+      let resultMessage = document.querySelector('#fieldSection h3.result-msg');
+      if (!resultMessage) {
+          resultMessage = document.createElement('h3');
+          resultMessage.className = 'result-msg';
+          resultMessage.style.textAlign = 'center';
+          fieldPlaceholder.before(resultMessage);
+      }
       resultMessage.style.color = teamColor === 'NEGRO' ? '#334155' : (teamColor === 'BLANCO' ? '#f1f5f9' : '#94a3b8');
       resultMessage.textContent = `¡Estás en el EQUIPO ${teamColor}!`;
-      fieldPlaceholder.before(resultMessage);
       
       fieldSection.scrollIntoView({behavior: "smooth"});
   }
 
 
-  // --- PIZARRA TÁCTICA (MODIFICADA PARA ACEPTAR CAMPO DESTINO) ---
-  function drawTeamOnUnifiedField(team, colorClass, half, targetField) { // Acepta targetField
+  // --- PIZARRA TÁCTICA (DRAG & DROP Y RENDERIZADO) ---
+  function drawTeamOnUnifiedField(team, colorClass, half, targetField) { 
     const isBottomHalf = half === 'bottom';
     
     // Coordenadas fijas OBLIGATORIAS (Esqueleto 1-3-1)
@@ -819,19 +951,16 @@ document.addEventListener('DOMContentLoaded', () => {
             pos = {x: 60 + Math.random() * 200, y: yCenter};
         }
         
-        // Se pasa targetField en lugar de fullField
         createToken(p, targetField, colorClass, pos.x, pos.y); 
     });
   }
 
-  // FUNCIÓN createToken
   function createToken(p, div, cls, x, y) {
     const el = document.createElement('div');
     el.className = `player-token ${cls}`;
     el.textContent = p.name.substring(0,2).toUpperCase();
     el.style.left = x+'px'; el.style.top = y+'px';
     
-    // Si el modo es jugador y es el jugador activo, resalta su ficha
     if (matchLinkID && String(p.id) === activePlayerId) {
         el.style.boxShadow = '0 0 10px 5px var(--accent)';
     }
@@ -839,7 +968,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const l = document.createElement('div'); l.className='player-label'; l.textContent=p.name;
     el.appendChild(l);
     
-    // Solo permitimos arrastrar en el modo entrenador (si es el fullField original)
+    // Solo permitimos arrastrar en el modo entrenador 
     if (div === fullField) {
         el.addEventListener('mousedown', startDrag);
         el.addEventListener('touchstart', startDrag, {passive: false});
