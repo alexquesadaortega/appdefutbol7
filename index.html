@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
-<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<script src="https://html2canvas.hertzen.com/dist/html222canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
@@ -202,15 +202,8 @@ button.select-btn.selected { background: var(--accent); color: #000; border: 1px
     <p id="votingHeader" style="font-size:0.85rem; color:var(--text-muted);">Mira como van los votos y elige tu favorita.</p>
     <div id="votingOptionsContainer"></div>
   </div>
-
-  <div id="waitingScreen" class="hidden">
-    <h3>✅ Voto Registrado</h3>
-    <p>Gracias. Esperando que el Míster publique la alineación final...</p>
-    <div class="field-container" style="height: 200px; justify-content:center;">
-       <div class="rating-badge" style="width:60px; height:60px; font-size:1.5rem; border-color:var(--accent);">🗳️</div>
-    </div>
+  
   </div>
-</div>
 
 <div id="voteConfirmModal" class="modal-overlay hidden">
   <div class="modal-content">
@@ -292,7 +285,7 @@ button.select-btn.selected { background: var(--accent); color: #000; border: 1px
 document.addEventListener('DOMContentLoaded', () => {
   // --- CONFIGURACIÓN SUPABASE ---
   // ! CAMBIA ESTOS DATOS POR LOS TUYOS DE SUPABASE
-const SUPABASE_URL = 'https://vayholflhqoyflbvuusa.supabase.co';
+  const SUPABASE_URL = 'https://vayholflhqoyflbvuusa.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheWhvbGZsaHFveWZsYnZ1dXNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNzc5NjcsImV4cCI6MjA3ODY1Mzk2N30.QxD4_XbYlQarPRUcmoQQclw8cCnnzRiHZcYzSsUXGDA' ;
   let supabase;
   try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e) { console.error("Error Supabase", e); }
@@ -334,6 +327,9 @@ const SUPABASE_URL = 'https://vayholflhqoyflbvuusa.supabase.co';
   const voteConfirmModal = document.getElementById('voteConfirmModal');
   const btnCancelVote = document.getElementById('btnCancelVote');
   const btnDoVote = document.getElementById('btnDoVote');
+  
+  // Contenedor de Opciones de Votación (para jugador y míster)
+  const votingOptionsContainer = document.getElementById('votingOptionsContainer');
 
   // --- EVENTOS ---
   document.getElementById('btnRegister').addEventListener('click', () => handleAuth('signup'));
@@ -739,13 +735,12 @@ const SUPABASE_URL = 'https://vayholflhqoyflbvuusa.supabase.co';
           
           const card = document.getElementById(`option-card-${index}`);
           if (card) {
-              // Verificar si existe el elemento .vote-status, si no crearlo (para players)
+              // Buscar o crear el elemento .vote-status
               let voteEl = card.querySelector('.vote-status');
               if (!voteEl) {
                   voteEl = document.createElement('p');
                   voteEl.className = 'vote-status';
                   voteEl.style.cssText = "margin:10px 0; font-weight:bold; color:var(--accent); font-size:0.9rem;";
-                  // Insertar antes del botón o columnas
                   const ref = card.querySelector('.team-columns') || card.querySelector('button');
                   if(ref) card.insertBefore(voteEl, ref);
               }
@@ -779,6 +774,7 @@ const SUPABASE_URL = 'https://vayholflhqoyflbvuusa.supabase.co';
       const codeIn = document.getElementById('playerCodeInput').value.trim();
       if (!codeIn) return alert("Pon tu código.");
 
+      // RPC to get player by code (make sure this RPC exists in Supabase)
       const { data, error } = await supabase.rpc('get_player_by_code', { code_input: codeIn });
 
       if (error) { console.error(error); return alert("Error buscando código."); }
@@ -798,34 +794,37 @@ const SUPABASE_URL = 'https://vayholflhqoyflbvuusa.supabase.co';
       document.getElementById('votingView').classList.remove('hidden');
       document.getElementById('lobbyStatus').textContent = "Vota tu favorita.";
       await fetchVotingOptions();
-      listenToMatchStatus(true); // Escuchar estado del partido
-      listenToVotes(); // Escuchar votos en tiempo real (NUEVO PARA JUGADOR)
+      listenToMatchStatus(true); 
+      listenToVotes(); 
   }
 
   async function fetchVotingOptions() {
       const { data, error } = await supabase.from('matches').select('teams_options, status, final_teams_result').eq('id', currentMatchId).single();
       if (data && data.status === 'final') { showPlayerResult(data.final_teams_result); return; }
       if (!data || !data.teams_options) {
-          document.getElementById('votingOptionsContainer').innerHTML = '<p>Esperando opciones...</p>';
+          votingOptionsContainer.innerHTML = '<p>Esperando opciones...</p>';
           return;
       }
       
       const { data: voteData } = await supabase.from('match_votes').select('id').eq('match_id', currentMatchId).eq('player_id', activePlayerId).single();
+      
+      // NUEVA LÓGICA: Si ya votó, mostrar opciones en modo lectura
       if (voteData) {
-          document.getElementById('votingView').classList.add('hidden');
-          document.getElementById('waitingScreen').classList.remove('hidden');
+          renderReadOnlyVotingOptions(data.teams_options);
+          document.getElementById('votingHeader').textContent = '✅ VOTO REGISTRADO. Observa la tendencia en vivo.';
           return;
       }
+      
+      document.getElementById('votingHeader').textContent = 'Mira como van los votos y elige tu favorita.';
       renderVotingOptions(data.teams_options);
   }
 
   function renderVotingOptions(options) {
-      const container = document.getElementById('votingOptionsContainer');
-      container.innerHTML = '';
+      votingOptionsContainer.innerHTML = '';
       options.forEach((opt, index) => {
           const div = document.createElement('div');
           div.className = 'option-card';
-          div.id = `option-card-${index}`; // ID para actualizar votos
+          div.id = `option-card-${index}`; 
           div.innerHTML = `
               <h4>Opción ${index + 1}</h4>
               <div class="team-columns">
@@ -834,9 +833,37 @@ const SUPABASE_URL = 'https://vayholflhqoyflbvuusa.supabase.co';
               </div>
               <button class="primary vote-btn" data-option="${index}" style="margin-top:10px;">Votar por Opción ${index + 1}</button>
           `;
-          container.appendChild(div);
+          votingOptionsContainer.appendChild(div);
       });
       document.querySelectorAll('.vote-btn').forEach(btn => btn.addEventListener('click', initiateVote));
+  }
+  
+  // NUEVA FUNCIÓN: Renderizar opciones deshabilitadas con resultados visibles
+  function renderReadOnlyVotingOptions(options) {
+      votingOptionsContainer.innerHTML = '';
+      
+      // Banner de confirmación
+      const banner = document.createElement('div');
+      banner.className = 'box';
+      banner.style.cssText = "background: rgba(163, 230, 53, 0.1); border: 1px solid var(--accent); margin-bottom: 20px;";
+      banner.innerHTML = `<p style="color:var(--accent); text-align:center; margin:0; font-weight:bold;">✅ VOTO REGISTRADO. Votación en curso...</p>`;
+      votingOptionsContainer.appendChild(banner);
+
+      options.forEach((opt, index) => {
+          const div = document.createElement('div');
+          div.className = 'option-card';
+          div.id = `option-card-${index}`; 
+          div.innerHTML = `
+              <h4>Opción ${index + 1}</h4>
+              <div class="team-columns">
+                  <div class="team-col"><strong>Negro</strong><ul>${renderListSimple(opt.teamA)}</ul></div>
+                  <div class="team-col"><strong>Blanco</strong><ul>${renderListSimple(opt.teamB)}</ul></div>
+              </div>
+              <button class="secondary" disabled style="margin-top:10px; opacity:0.6;">Ya has votado</button>
+          `;
+          votingOptionsContainer.appendChild(div);
+      });
+      updateVoteDisplay(); // Asegurar que los votos iniciales se muestren
   }
 
   // INICIAR PROCESO DE VOTO (ABRIR MODAL)
@@ -857,8 +884,12 @@ const SUPABASE_URL = 'https://vayholflhqoyflbvuusa.supabase.co';
       
       if (error && error.code !== '23505') return alert("Error al votar.");
       
-      document.getElementById('votingView').classList.add('hidden');
-      document.getElementById('waitingScreen').classList.remove('hidden');
+      // CAMBIO: Al votar, simplemente pasamos a la vista de solo lectura
+      const { data: matchData } = await supabase.from('matches').select('teams_options').eq('id', currentMatchId).single();
+      if(matchData && matchData.teams_options) {
+          renderReadOnlyVotingOptions(matchData.teams_options);
+      }
+      document.getElementById('lobbyStatus').textContent = "Voto emitido. Observa los resultados en vivo.";
   }
 
   function listenToMatchStatus(initial) {
@@ -869,7 +900,7 @@ const SUPABASE_URL = 'https://vayholflhqoyflbvuusa.supabase.co';
   }
 
   function showPlayerResult(result, isCoach) {
-      if(!isCoach) document.getElementById('playerLobby').style.display = 'none';
+      document.getElementById('playerLobby').style.display = 'none';
       appContent.classList.remove('hidden');
       appContent.style.display = 'block';
       
