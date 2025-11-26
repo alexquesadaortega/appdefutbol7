@@ -228,7 +228,7 @@ button.select-btn.selected {
     </div>
   </div>
 
-  <div id="votingView" class="hidden">
+  <div id="votingView" class.="hidden">
     <h3 style="color: var(--primary);">Opciones del Míster</h3>
     <p id="votingHeader" style="font-size:0.85rem; color:var(--text-muted);">¿Cuál crees que es la alineación más justa?</p>
     <div id="votingOptionsContainer"></div>
@@ -272,9 +272,9 @@ button.select-btn.selected {
     <div id="playersList"></div>
   </div>
 
-  <div class="box" style="border: 1px solid var(--primary);">
-    <h2 style="color: var(--primary);">⚡ Generar Partido</h2>
-    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:15px;">
+  <div class="box" id="matchControlBox" style="border: 1px solid var(--primary);">
+    <h2 style="color: var(--primary);" id="matchControlTitle">⚡ Generar Partido</h2>
+    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:15px;" id="matchControlSubtitle">
         Genera 5 opciones para seleccionar las 3 mejores para la votación.
     </p>
     
@@ -361,12 +361,22 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // --- INICIALIZACIÓN: MODO COACH o MODO JUGADOR ---
   if (matchLinkID) {
-      authBox.style.display = 'none';
-      appContent.style.display = 'none';
-      playerLobby.classList.remove('hidden');
-      currentMatchId = matchLinkID;
-      // La escucha de status (listenToMatchStatus) se inicializa en enterVoting
+      // Modo JUGADOR o MÍSTER en Sala de Control
+      supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session) {
+              // MÍSTER: Cargar Sala de Control
+              currentUser = session.user;
+              initCoachControlRoom(matchLinkID);
+          } else {
+              // JUGADOR: Cargar lobby de votación
+              authBox.style.display = 'none';
+              appContent.style.display = 'none';
+              playerLobby.classList.remove('hidden');
+              currentMatchId = matchLinkID;
+          }
+      });
   } else {
+      // Modo MÍSTER: Cargar Dashboard Normal
       supabase.auth.getSession().then(({ data: { session } }) => {
           if (session) {
               currentUser = session.user;
@@ -407,7 +417,63 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(initApp, 500);
     }
   }
-  async function initApp() { authBox.style.display = 'none'; appContent.classList.remove('hidden'); await loadPlayers(); }
+  
+  // Inicializa la vista normal del Míster
+  async function initApp() { 
+      authBox.style.display = 'none'; 
+      appContent.classList.remove('hidden'); 
+      await loadPlayers(); 
+  }
+
+  // --- SALA DE CONTROL DEL MÍSTER (NUEVA) ---
+  async function initCoachControlRoom(matchId) {
+    currentMatchId = matchId;
+    authBox.style.display = 'none';
+    appContent.classList.remove('hidden');
+    
+    // Ocultar las secciones de añadir jugadores y generar equipos
+    document.getElementById('playerName').closest('.box').style.display = 'none';
+    document.getElementById('playersList').closest('.box').style.display = 'none';
+    document.getElementById('btnGenerateTeams').closest('.box').style.display = 'none';
+    
+    // 1. Obtener los datos del partido
+    const { data: match, error } = await supabase
+        .from('matches')
+        .select('teams_options, status, final_teams_result')
+        .eq('id', currentMatchId)
+        .eq('coach_id', currentUser.id)
+        .single();
+        
+    if (error || !match) {
+        alert("Error cargando la sala de control o no tienes permisos.");
+        // Redirigir a la vista normal si hay error
+        window.location.href = window.location.origin + window.location.pathname;
+        return;
+    }
+    
+    // Actualizar títulos
+    document.getElementById('matchControlTitle').textContent = '📊 Sala de Control';
+    document.getElementById('matchControlSubtitle').textContent = 'Votación en curso. Revisa los resultados en tiempo real.';
+
+    if (match.status === 'final' && match.final_teams_result) {
+        // Ya finalizó, mostrar pizarra
+        showPlayerResult(match.final_teams_result, true); 
+        return;
+    }
+
+    if (match.status === 'voting' && match.teams_options && match.teams_options.length === 3) {
+        // 2. Míster en el modo Votación (Cargamos las 3 opciones publicadas)
+        // Las opciones publicadas son las 3 que se votan.
+        generatedOptions = match.teams_options.concat(new Array(2).fill(null));
+        selectedVotingOptions = [0, 1, 2]; 
+
+        // 3. Renderizar las 3 opciones con botones de finalizar
+        displayControlRoomOptions(match.teams_options); 
+        
+        // 4. Empezar a escuchar votos en tiempo real
+        listenToVotes(); 
+    }
+  }
 
   // --- JUGADORES Y LISTA (COACH) ---
   async function loadPlayers() { 
@@ -540,19 +606,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     variations.sort((a, b) => a.diff - b.diff); 
-    // AHORA SELECCIONAMOS LAS TOP 5, NO SOLO 3
+    // AHORA SELECCIONAMOS LAS TOP 5
     generatedOptions = variations.slice(0, 5); 
 
     if (generatedOptions.length === 0) { showError("Error generando combinaciones."); return; }
     
     selectedVotingOptions = []; // Resetear selección
-    displayOptionsForSelection(generatedOptions); // Llama a la nueva función de renderizado
+    displayOptionsForSelection(generatedOptions); 
     updatePublishButtonState();
-    
-    // Si ya existe un partido en curso, empezar a escuchar votos (si ya fueron publicados)
-    if (currentMatchId) {
-        listenToVotes();
-    }
   }
 
   function showError(msg) { generateError.textContent = msg; generateError.style.display = 'block'; }
@@ -601,6 +662,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const selectionContainer = document.getElementById('selectionOptionsContainer');
       
       options.forEach((opt, index) => {
+          // Si opt es null, significa que no hay suficientes opciones generadas o es un placeholder
+          if (!opt) return; 
+          
           const isSelected = selectedVotingOptions.includes(index);
           const btnClass = isSelected ? 'selected primary' : 'secondary';
           
@@ -685,7 +749,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
   }
   
-  // PUBLICAR OPCIONES Y OBTENER LINK (ACTUALIZADA)
+  // PUBLICAR OPCIONES Y OBTENER LINK (ACTUALIZADA con Redirección a Sala de Control)
   async function publishVotingOptions() {
       if (selectedVotingOptions.length !== 3) {
           return alert("Debes seleccionar exactamente 3 opciones antes de publicar.");
@@ -698,7 +762,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // 1. Obtener las 3 opciones seleccionadas (usando los índices)
       const finalOptionsToPublish = selectedVotingOptions.map(index => generatedOptions[index]);
 
-      // 2. Asegurar que tenemos un ID de partido (Crear si no existe)
+      // 2. Crear el ID del partido si no existe
       if (!currentMatchId) {
           const { data, error } = await supabase
               .from('matches')
@@ -714,7 +778,7 @@ document.addEventListener('DOMContentLoaded', () => {
           currentMatchId = data.id;
       }
 
-      // 3. Subir las opciones a Supabase y cambiar el estado a 'voting'
+      // 3. Subir las opciones y cambiar el estado a 'voting'
       const { error: updateError } = await supabase
           .from('matches')
           .update({ 
@@ -731,16 +795,15 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // 4. Generar Enlace y Mostrar Modal de Compartir
-      const link = `${window.location.origin}${window.location.pathname}?match_id=${currentMatchId}`;
+      const controlLink = `${window.location.origin}${window.location.pathname}?match_id=${currentMatchId}`;
       
-      // Actualizar botón de estado
-      publishBtn.innerHTML = '✅ Opciones Publicadas. ¡Comparte!';
-      publishBtn.style.background = 'var(--whatsapp)';
+      // Mostrar el modal antes de la redirección para que pueda copiar el link de votación
+      showShareModal(controlLink);
       
-      showShareModal(link);
-      
-      // Empezar a escuchar votos
-      listenToVotes(); 
+      // Redireccionamos al Míster a la Sala de Control
+      setTimeout(() => {
+          window.location.href = controlLink;
+      }, 100); 
   }
   
   // FUNCIÓN PARA MOSTRAR LAS OPCIONES DE COMPARTIR
@@ -754,11 +817,9 @@ document.addEventListener('DOMContentLoaded', () => {
               text: defaultMessage,
               url: link,
           }).catch((error) => {
-               // Si el share nativo falla o se cancela, mostramos el alert mejorado
                showAdvancedAlert(link, whatsappLink);
           });
       } else {
-          // Para navegadores de escritorio (sin API share)
           showAdvancedAlert(link, whatsappLink);
       }
   }
@@ -781,6 +842,58 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
 
+  // --- FUNCIÓN: RENDERIZAR OPCIONES EN LA SALA DE CONTROL (NUEVA) ---
+  function displayControlRoomOptions(options) {
+      const container = document.getElementById('teamsResult');
+      
+      // Contenido de la Sala de Control
+      container.innerHTML = `
+          <div class="box" style="border: 1px solid var(--primary); margin-top:20px;">
+              <h2 style="color: var(--primary);">📊 Sala de Control (Votación)</h2>
+              <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:20px;">
+                  Enlace de votación: <strong style="color:var(--accent);"><span id="matchLinkSpan">${window.location.href}</span></strong>
+              </p>
+              <div id="controlOptionsContainer"></div>
+              <button id="btnFinalizeTeam" class="primary" style="margin-top:30px; font-size: 1.1rem; background: var(--accent); color:#000; box-shadow: 0 0 20px rgba(163, 230, 53, 0.4);">
+                  ⭐ Finalizar Votación y Elegir Equipo
+              </button>
+          </div>
+      `;
+      
+      const controlContainer = document.getElementById('controlOptionsContainer');
+      options.forEach((opt, index) => {
+          const div = document.createElement('div');
+          div.className = 'option-card';
+          div.id = `option-card-${index}`; 
+          div.style.border = '1px solid var(--accent)';
+          div.innerHTML = `
+              <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px; margin-bottom:10px;">
+                  <h4 style="margin:0; color:var(--primary);">Opción ${index + 1}</h4>
+                  <span class="tag" style="background:#334155; color:#fff;">Dif: ${opt.diff.toFixed(2)}</span>
+              </div>
+              
+              <p class="vote-status" style="margin:10px 0 0 0; font-weight:bold; color:var(--accent); font-size:1.1rem;">Cargando votos...</p>
+
+              <div class="team-columns">
+                  <div class="team-col"><strong style="color:#94a3b8">Negro (${opt.avgA})</strong><ul>${renderListSimple(opt.teamA)}</ul></div>
+                  <div class="team-col"><strong style="color:#f1f5f9">Blanco (${opt.avgB})</strong><ul>${renderListSimple(opt.teamB)}</ul></div>
+              </div>
+          `;
+          controlContainer.appendChild(div);
+      });
+
+      document.getElementById('btnFinalizeTeam').addEventListener('click', () => {
+          const voteCounts = {};
+          selectedVotingOptions.forEach(index => voteCounts[index] = 0);
+          allVotes.forEach(vote => {
+              const votedIndex = parseInt(vote.option_index);
+              if (selectedVotingOptions.includes(votedIndex)) {
+                voteCounts[votedIndex]++;
+              }
+          });
+          showFinalizeModal(voteCounts);
+      });
+  }
 
   // --- VOTOS EN TIEMPO REAL (COACH) ---
   let allVotes = [];
@@ -806,7 +919,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function updateVoteDisplay() {
-      // Solo actualizamos las tarjetas que están seleccionadas
+      // Solo actualizamos las tarjetas que están seleccionadas (las 3 mostradas)
       const optionsToMonitor = selectedVotingOptions; 
       
       const voteCounts = {};
@@ -835,23 +948,10 @@ document.addEventListener('DOMContentLoaded', () => {
               }
           }
       });
-      
-      // Si ya hay opciones generadas, añadimos el botón de Finalizar Equipos
-      let finalizeBtn = document.getElementById('btnFinalizeTeam');
-      if (!finalizeBtn && selectedVotingOptions.length > 0) {
-          finalizeBtn = document.createElement('button');
-          finalizeBtn.id = 'btnFinalizeTeam';
-          finalizeBtn.className = 'primary';
-          finalizeBtn.innerHTML = '⭐️ Seleccionar Resultado Final';
-          finalizeBtn.style.marginTop = '20px';
-          finalizeBtn.addEventListener('click', () => showFinalizeModal(voteCounts));
-          document.getElementById('teamsResult').appendChild(finalizeBtn);
-      }
   }
 
   function showFinalizeModal(voteCounts) {
       const totalVotes = allVotes.length;
-      let modalContent = '<h3>Resultados de la Votación</h3>';
       
       const optionsInfo = selectedVotingOptions.map(index => {
           const opt = generatedOptions[index];
@@ -868,20 +968,21 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Pedir elección
       let choice = prompt(alertMessage);
-      const chosenIndex = parseInt(choice) - 1; // Mapear 1, 2, 3 a 0, 1, 2
-      
-      if(selectedVotingOptions.includes(chosenIndex)) {
-          finalizeTeam(chosenIndex);
+      const chosenIndex = parseInt(choice); // Mapear 1, 2, 3
+
+      // Validar que la opción elegida esté entre 1 y 3 (o las opciones publicadas)
+      if(choice !== null && chosenIndex >= 1 && chosenIndex <= 3) {
+          finalizeTeam(chosenIndex - 1); // Pasamos el índice (0, 1, 2)
       } else if (choice !== null) {
-          alert("Opción no válida o cancelada. Inténtalo de nuevo.");
+          alert("Opción no válida. Inténtalo de nuevo.");
       }
   }
   
   // PUBLICAR RESULTADO FINAL (COACH)
-  window.finalizeTeam = async function (winningOptionIndex) { // La hacemos global para el ejemplo del modal
+  window.finalizeTeam = async function (winningOptionIndex) { 
       if (!currentMatchId || generatedOptions.length === 0) return alert("Error: No hay opciones generadas o ID de partido.");
       
-      // Buscamos la opción en el array original de 5 opciones
+      // La opción ganadora se encuentra en el array de opciones generadas/publicadas
       const winningOption = generatedOptions[winningOptionIndex];
       
       const { error } = await supabase
