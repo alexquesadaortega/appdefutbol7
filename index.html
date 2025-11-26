@@ -105,6 +105,12 @@ button.outline {
   background: transparent; border: 1px solid var(--primary); color: var(--primary); 
   font-size: 0.8rem; padding: 6px 12px; width: auto; margin: 0;
 }
+/* Estilo para el botón de selección de opciones */
+button.select-btn.selected { 
+    background: var(--accent); 
+    color: #000; 
+    border: 1px solid var(--accent);
+}
 
 /* LISTAS */
 .player-row { 
@@ -128,6 +134,7 @@ button.outline {
 .option-card { 
   background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05);
   border-radius: 16px; padding: 20px; margin-bottom: 20px; 
+  transition: border 0.3s ease;
 }
 .team-columns { display: flex; flex-direction: column; gap: 20px; margin-top: 15px; } 
 @media (min-width: 768px) { .team-columns { flex-direction: row; } }
@@ -239,13 +246,6 @@ button.outline {
 
 <div id="appContent" class="hidden">
   
-  <div class="box" style="background: linear-gradient(45deg, #1e293b, #0f172a); border: 1px solid var(--whatsapp);">
-      <h3 style="color: var(--whatsapp); margin:0;">📡 Partido en Vivo</h3>
-      <p style="font-size:0.8rem; color:#94a3b8;">Crea un enlace para que los jugadores voten por los equipos.</p>
-      <button id="btnStartLive" class="whatsapp">🔗 Crear Sala & Copiar Link</button>
-      <p id="liveLinkMsg" style="font-size:0.8rem; color:var(--accent); display:none; margin-top:10px;">¡Enlace copiado! Esperando votaciones...</p>
-  </div>
-  
   <div class="box">
     <h2>👤 Nuevo Fichaje</h2>
     <p style="font-size:0.85rem; color:var(--text-muted);">El código se genera automáticamente.</p>
@@ -275,13 +275,14 @@ button.outline {
   <div class="box" style="border: 1px solid var(--primary);">
     <h2 style="color: var(--primary);">⚡ Generar Partido</h2>
     <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:15px;">
-        Genera al menos 3 opciones para que los jugadores voten.
+        Genera 5 opciones para seleccionar las 3 mejores para la votación.
     </p>
     
-    <button id="btnGenerateTeams" class="primary" style="font-size: 1.1rem; box-shadow: 0 0 20px rgba(6,182,212,0.3);">🎲 Crear Opciones de Voto</button>
+    <button id="btnGenerateTeams" class="primary" style="font-size: 1.1rem; box-shadow: 0 0 20px rgba(6,182,212,0.3);">🎲 Generar 5 Opciones de Equipo</button>
     <div id="generateError" class="error-msg"></div>
 
-    <div id="teamsResult" style="margin-top:20px;"></div>
+    <div id="teamsResult" style="margin-top:20px;">
+        </div>
   </div>
 
   <div id="fieldSection" class="box hidden" style="background: #f1f5f9; color: #1e293b;">
@@ -309,6 +310,7 @@ button.outline {
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   // --- CONFIG ---
+  // ! CAMBIA ESTOS DATOS POR LOS TUYOS DE SUPABASE
   const SUPABASE_URL = 'https://vayholflhqoyflbvuusa.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheWhvbGZsaHFveWZsYnZ1dXNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNzc5NjcsImV4cCI6MjA3ODY1Mzk2N30.QxD4_XbYlQarPRUcmoQQclw8cCnnzRiHZcYzSsUXGDA' ;
   let supabase;
@@ -319,7 +321,11 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentMatchId = null; 
   let activePlayerId = null; 
   let activePlayerData = null; 
-  let currentOptions = []; // Para guardar las opciones de voto en el lado del míster
+  
+  // --- NUEVAS VARIABLES DE ESTADO PARA EL MÍSTER ---
+  let generatedOptions = []; // Almacena las 5 opciones generadas
+  let selectedVotingOptions = []; // Almacena los índices de las 3 opciones seleccionadas (0, 1, 2, 3 o 4)
+
 
   const urlParams = new URLSearchParams(window.location.search);
   const matchLinkID = urlParams.get('match_id'); 
@@ -333,15 +339,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnShare = document.getElementById('btnShareWhatsapp');
   const fullField = document.getElementById('fullField'); 
 
-  // ELEMENTOS NUEVOS (Player)
+  // ELEMENTOS JUGADOR
   const playerLobby = document.getElementById('playerLobby');
   const playerCodeInput = document.getElementById('playerCodeInput');
   const btnAuthPlayer = document.getElementById('btnAuthPlayer');
-  const btnEnterVoting = document.getElementById('btnEnterVoting'); // CAMBIADO
+  const btnEnterVoting = document.getElementById('btnEnterVoting');
   
-  // ELEMENTOS NUEVOS (Coach)
-  const btnStartLive = document.getElementById('btnStartLive');
-
   // --- EVENTOS ---
   document.getElementById('btnRegister').addEventListener('click', () => handleAuth('signup'));
   document.getElementById('btnLogin').addEventListener('click', () => handleAuth('signin'));
@@ -351,10 +354,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnDeselectAll').addEventListener('click', deselectAllPlayers);
   btnShare.addEventListener('click', shareFieldsImage);
 
-  // NUEVOS EVENTOS LIVE
-  if(btnStartLive) btnStartLive.addEventListener('click', createLiveMatch);
+  // EVENTOS JUGADOR
   if(btnAuthPlayer) btnAuthPlayer.addEventListener('click', searchPlayerByCode);
-  if(btnEnterVoting) btnEnterVoting.addEventListener('click', enterVoting); // NUEVO EVENTO
+  if(btnEnterVoting) btnEnterVoting.addEventListener('click', enterVoting); 
 
   
   // --- INICIALIZACIÓN: MODO COACH o MODO JUGADOR ---
@@ -505,32 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- MODO ENTRENADOR LIVE ---
-  async function createLiveMatch() {
-    if (!currentUser) return alert("Inicia sesión primero");
-
-    const { data, error } = await supabase
-        .from('matches')
-        .insert([{ coach_id: currentUser.id, status: 'created' }])
-        .select()
-        .single();
-
-    if (error) return alert("Error creando sala");
-
-    currentMatchId = data.id;
-    
-    const link = `${window.location.origin}${window.location.pathname}?match_id=${currentMatchId}`;
-    
-    navigator.clipboard.writeText(link).then(() => {
-        document.getElementById('liveLinkMsg').style.display = 'block';
-        document.getElementById('liveLinkMsg').textContent = "Link copiado: " + link;
-    });
-
-    // En este flujo, no escuchamos asistencia, solo el resultado final
-    alert("¡Sala creada! Manda el link por WhatsApp. Ahora genera las opciones de voto.");
-  }
-
-  // --- GENERACIÓN DE EQUIPOS (COACH) Y ENVÍO DE OPCIONES ---
+  // --- GENERACIÓN DE EQUIPOS (COACH) Y SELECCIÓN DE 5 OPCIONES ---
   function generateTeamOptions() { 
     generateError.style.display = 'none';
     const checks = document.querySelectorAll('.p-select:checked');
@@ -563,27 +540,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     variations.sort((a, b) => a.diff - b.diff); 
-    const top3 = variations.slice(0, 3);
-    currentOptions = top3; // Guardar las opciones para la selección final
+    // AHORA SELECCIONAMOS LAS TOP 5, NO SOLO 3
+    generatedOptions = variations.slice(0, 5); 
 
-    if (top3.length === 0) { showError("Error generando combinaciones."); return; }
-    displayOptions(top3);
-
-    // ENVIAR OPCIONES A LA BASE DE DATOS PARA QUE EL JUGADOR VOTE (¡NUEVO!)
-    if (currentMatchId && top3.length > 0) {
-        supabase
-            .from('matches')
-            .update({ 
-                status: 'voting', // Nuevo estado: Votación
-                teams_options: top3, // Guardamos las 3 opciones
-                final_teams_result: null // Limpiamos el resultado final
-            })
-            .eq('id', currentMatchId)
-            .then(() => console.log("Opciones enviadas a jugadores para votación."));
-    }
+    if (generatedOptions.length === 0) { showError("Error generando combinaciones."); return; }
     
+    selectedVotingOptions = []; // Resetear selección
+    displayOptionsForSelection(generatedOptions); // Llama a la nueva función de renderizado
+    updatePublishButtonState();
+    
+    // Si ya existe un partido en curso, empezar a escuchar votos (si ya fueron publicados)
     if (currentMatchId) {
-        // Iniciar la escucha de votos si hay un partido live activo
         listenToVotes();
     }
   }
@@ -616,9 +583,177 @@ document.addEventListener('DOMContentLoaded', () => {
     return { teamA, teamB, avgA: avgA.toFixed(2), avgB: avgB.toFixed(2), diff: Math.abs(avgA - avgB) };
   }
 
+
+  // --- MANEJO DE SELECCIÓN DE OPCIONES (COACH) ---
+  
+  // RENDERIZAR OPCIONES PARA SELECCIÓN
+  function displayOptionsForSelection(options) {
+      const container = document.getElementById('teamsResult');
+      container.innerHTML = `
+          <h3 style="color:var(--accent); margin-top:20px;">Elige 3 Opciones para Votar</h3>
+          <p id="selectionStatus" style="color:var(--text-muted); font-size:0.85rem;">Seleccionadas: 0/3</p>
+          <div id="selectionOptionsContainer"></div>
+          <button id="btnPublishOptions" class="secondary" style="margin-top:20px; font-size: 1.1rem;" disabled>
+              🚀 Publicar Opciones y Obtener Link
+          </button>
+      `;
+      
+      const selectionContainer = document.getElementById('selectionOptionsContainer');
+      
+      options.forEach((opt, index) => {
+          const isSelected = selectedVotingOptions.includes(index);
+          const btnClass = isSelected ? 'selected primary' : 'secondary';
+          
+          const div = document.createElement('div');
+          div.className = 'option-card';
+          div.id = `option-card-${index}`; 
+          div.innerHTML = `
+              <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px; margin-bottom:10px;">
+                  <h4 style="margin:0; color:var(--primary);">Opción ${index + 1}</h4>
+                  <span class="tag" style="background:#334155; color:#fff;">Dif: ${opt.diff.toFixed(2)}</span>
+              </div>
+              
+              <p class="vote-status" style="margin:10px 0 0 0; font-weight:bold; color:var(--accent); font-size:0.9rem;"></p>
+
+              <div class="team-columns">
+                  <div class="team-col"><strong style="color:#94a3b8">Negro (${opt.avgA})</strong><ul>${renderListSimple(opt.teamA)}</ul></div>
+                  <div class="team-col"><strong style="color:#f1f5f9">Blanco (${opt.avgB})</strong><ul>${renderListSimple(opt.teamB)}</ul></div>
+              </div>
+              <button class="select-btn ${btnClass}" data-index="${index}" style="margin-top:15px; width:100%; font-size:0.9rem;">
+                  ${isSelected ? '✅ Opción Seleccionada' : '➕ Seleccionar para Votación'}
+              </button>
+          `;
+          selectionContainer.appendChild(div);
+      });
+
+      document.querySelectorAll('.select-btn').forEach(btn => {
+          btn.addEventListener('click', handleOptionSelection);
+      });
+      
+      document.getElementById('btnPublishOptions').addEventListener('click', publishVotingOptions);
+  }
+
+  // MANEJO DE SELECCIÓN DE OPCIONES
+  function handleOptionSelection(e) {
+      const btn = e.currentTarget;
+      const index = parseInt(btn.dataset.index);
+      const card = document.getElementById(`option-card-${index}`);
+
+      if (selectedVotingOptions.includes(index)) {
+          // Deseleccionar
+          selectedVotingOptions = selectedVotingOptions.filter(i => i !== index);
+          btn.classList.remove('selected', 'primary');
+          btn.classList.add('secondary');
+          btn.innerHTML = '➕ Seleccionar para Votación';
+          btn.style.background = '#334155';
+          card.style.border = '1px solid rgba(255,255,255,0.05)';
+      } else {
+          // Seleccionar
+          if (selectedVotingOptions.length >= 3) {
+              alert("Solo puedes seleccionar hasta 3 opciones para la votación.");
+              return;
+          }
+          selectedVotingOptions.push(index);
+          btn.classList.add('selected', 'primary');
+          btn.classList.remove('secondary');
+          btn.innerHTML = '✅ Opción Seleccionada';
+          btn.style.background = 'var(--accent)';
+          btn.style.color = '#000';
+          card.style.border = '1px solid var(--accent)';
+      }
+
+      updatePublishButtonState();
+  }
+
+  // ACTUALIZAR ESTADO DEL BOTÓN PUBLICAR
+  function updatePublishButtonState() {
+      const statusEl = document.getElementById('selectionStatus');
+      const publishBtn = document.getElementById('btnPublishOptions');
+      
+      statusEl.textContent = `Seleccionadas: ${selectedVotingOptions.length}/3`;
+      
+      if (selectedVotingOptions.length === 3) {
+          publishBtn.disabled = false;
+          publishBtn.classList.add('primary');
+          publishBtn.classList.remove('secondary');
+          statusEl.style.color = 'var(--accent)';
+      } else {
+          publishBtn.disabled = true;
+          publishBtn.classList.remove('primary');
+          publishBtn.classList.add('secondary');
+          statusEl.style.color = '#f87171'; // Rojo si falta
+      }
+  }
+  
+  // PUBLICAR OPCIONES Y OBTENER LINK
+  async function publishVotingOptions() {
+      if (selectedVotingOptions.length !== 3) {
+          return alert("Debes seleccionar exactamente 3 opciones antes de publicar.");
+      }
+      
+      const publishBtn = document.getElementById('btnPublishOptions');
+      publishBtn.innerHTML = '⏳ Publicando...';
+      publishBtn.disabled = true;
+      
+      // 1. Obtener las 3 opciones seleccionadas (usando los índices)
+      const finalOptionsToPublish = selectedVotingOptions.map(index => generatedOptions[index]);
+
+      // 2. Asegurar que tenemos un ID de partido (Crear si no existe)
+      if (!currentMatchId) {
+          const { data, error } = await supabase
+              .from('matches')
+              .insert([{ coach_id: currentUser.id, status: 'created' }])
+              .select()
+              .single();
+
+          if (error) { 
+              alert("Error creando la sala del partido.");
+              publishBtn.innerHTML = 'Error'; 
+              return; 
+          }
+          currentMatchId = data.id;
+      }
+
+      // 3. Subir las opciones a Supabase y cambiar el estado a 'voting'
+      const { error: updateError } = await supabase
+          .from('matches')
+          .update({ 
+              status: 'voting', 
+              teams_options: finalOptionsToPublish, 
+              final_teams_result: null 
+          })
+          .eq('id', currentMatchId);
+
+      if (updateError) {
+          alert("Error al subir las opciones de voto.");
+          publishBtn.innerHTML = 'Error';
+          return;
+      }
+
+      // 4. Generar y Copiar el Enlace para Jugadores
+      const link = `${window.location.origin}${window.location.pathname}?match_id=${currentMatchId}`;
+      
+      navigator.clipboard.writeText(link).then(() => {
+          publishBtn.innerHTML = '✅ ¡Opciones Publicadas! Link Copiado';
+          publishBtn.classList.remove('primary');
+          publishBtn.style.background = 'var(--whatsapp)';
+          alert(`¡Opciones de voto publicadas! Copia y envía este enlace a los jugadores:\n${link}`);
+          
+          // La lógica de monitoreo de votos (listenToVotes) debe empezar aquí
+          listenToVotes(); 
+      }).catch(err => {
+          publishBtn.innerHTML = 'Error al copiar';
+          alert(`Opciones publicadas, pero no se pudo copiar el link. Enlace: ${link}`);
+      });
+  }
+
+
   // --- VOTOS EN TIEMPO REAL (COACH) ---
   let allVotes = [];
   function listenToVotes() {
+      // Remover subscripción anterior si existe
+      supabase.removeChannel(supabase.channel('vote-room'));
+      
       // Escucha solo votos para el partido actual
       supabase
       .channel('vote-room')
@@ -637,10 +772,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function updateVoteDisplay() {
-      if (currentOptions.length === 0) return;
+      // Solo actualizamos las tarjetas que están seleccionadas
+      const optionsToMonitor = selectedVotingOptions; 
       
       const voteCounts = {};
-      currentOptions.forEach((_, index) => voteCounts[index] = 0);
+      optionsToMonitor.forEach(index => voteCounts[index] = 0);
       allVotes.forEach(vote => {
           if (vote.option_index !== undefined) {
               voteCounts[vote.option_index]++;
@@ -649,58 +785,71 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const totalVotes = allVotes.length;
       
-      currentOptions.forEach((opt, index) => {
+      optionsToMonitor.forEach(index => {
           const votes = voteCounts[index] || 0;
           const percentage = totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : 0;
           
           const card = document.getElementById(`option-card-${index}`);
           if (card) {
-              // Encuentra el botón o añade un nuevo elemento para mostrar los votos
               let voteStatusEl = card.querySelector('.vote-status');
-              if (!voteStatusEl) {
-                  voteStatusEl = document.createElement('p');
-                  voteStatusEl.className = 'vote-status';
-                  voteStatusEl.style.cssText = 'margin:10px 0 0 0; font-weight:bold; color:var(--accent);';
-                  card.insertBefore(voteStatusEl, card.querySelector('.select-opt-btn'));
+              if (voteStatusEl) {
+                  voteStatusEl.innerHTML = `Votos: ${votes} (${percentage}%)`;
               }
-              voteStatusEl.innerHTML = `Votos: ${votes} (${percentage}%)`;
           }
       });
+      
+      // Si ya hay opciones generadas, añadimos el botón de Finalizar Equipos
+      let finalizeBtn = document.getElementById('btnFinalizeTeam');
+      if (!finalizeBtn && selectedVotingOptions.length > 0) {
+          finalizeBtn = document.createElement('button');
+          finalizeBtn.id = 'btnFinalizeTeam';
+          finalizeBtn.className = 'primary';
+          finalizeBtn.innerHTML = '⭐️ Seleccionar Resultado Final';
+          finalizeBtn.style.marginTop = '20px';
+          finalizeBtn.addEventListener('click', () => showFinalizeModal(voteCounts));
+          document.getElementById('teamsResult').appendChild(finalizeBtn);
+      }
   }
 
+  function showFinalizeModal(voteCounts) {
+      const totalVotes = allVotes.length;
+      let modalContent = '<h3>Resultados de la Votación</h3>';
 
-  // RENDERIZADO DE OPCIONES (COACH)
-  function displayOptions(options) {
-    const container = document.getElementById('teamsResult');
-    container.innerHTML = '';
-    options.forEach((opt, index) => {
-        const div = document.createElement('div');
-        div.className = 'option-card';
-        div.id = `option-card-${index}`; // Añadimos ID para actualizar votos
-        div.innerHTML = `
-            <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px; margin-bottom:10px;">
-                <h4 style="margin:0; color:var(--primary);">Opción ${index + 1}</h4>
-                <span class="tag" style="background:#334155; color:#fff;">Dif: ${opt.diff.toFixed(2)}</span>
-            </div>
-            <div class="team-columns">
-                <div class="team-col"><strong style="color:#94a3b8">Negro (${opt.avgA})</strong><ul>${renderListSimple(opt.teamA)}</ul></div>
-                <div class="team-col"><strong style="color:#f1f5f9">Blanco (${opt.avgB})</strong><ul>${renderListSimple(opt.teamB)}</ul></div>
-            </div>
-            <button class="outline select-opt-btn" data-option="${index}" style="margin-top:15px; width:100%; border-color:var(--accent); color:var(--accent);">Publicar Equipo Final</button>
-        `;
-        div.querySelector('.select-opt-btn').addEventListener('click', (e) => {
-            const index = parseInt(e.currentTarget.dataset.option);
-            finalizeTeam(index);
-        });
-        container.appendChild(div);
-    });
+      selectedVotingOptions.forEach(index => {
+          const opt = generatedOptions[index];
+          const votes = voteCounts[index] || 0;
+          const percentage = totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : 0;
+          
+          modalContent += `
+              <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:10px; margin-bottom:10px;">
+                  <p><strong>Opción ${index + 1}</strong> (Dif. ${opt.diff.toFixed(2)}): <strong>${votes} Votos (${percentage}%)</strong></p>
+                  <button class="primary" onclick="finalizeTeam(${index})" style="padding:10px; font-size:0.9rem;">Elegir Opción ${index + 1} como Final</button>
+              </div>
+          `;
+      });
+      
+      // Uso simple de alert/prompt para el ejemplo (reemplazar por un modal real)
+      if (confirm(`Resultados:\n${modalContent.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ')}\n\n¿Quieres elegir el resultado final ahora?`)) {
+         // Si el usuario quiere, le pedimos el índice.
+         let choice = prompt("Introduce el número de la opción final (1, 2 o 3, si solo seleccionaste 3):\nSi seleccionaste la Opción 1, escribe '0'\nSi seleccionaste la Opción 2, escribe '1'\nSi seleccionaste la Opción 3, escribe '2'");
+         
+         // Debemos mapear la elección del usuario (1, 2, 3) al índice (0, 1, 2)
+         const chosenIndex = parseInt(choice); // El índice ya es 0, 1, o 2 si se basa en el array de 'selectedVotingOptions'
+         
+         if(selectedVotingOptions.includes(chosenIndex)) {
+            finalizeTeam(chosenIndex);
+         } else {
+            alert("Opción no válida.");
+         }
+      }
   }
   
   // PUBLICAR RESULTADO FINAL (COACH)
-  async function finalizeTeam(winningOptionIndex) {
-      if (!currentMatchId || currentOptions.length === 0) return alert("Error: No hay opciones generadas o ID de partido.");
+  window.finalizeTeam = async function (winningOptionIndex) { // Lo hacemos global para el ejemplo del modal
+      if (!currentMatchId || generatedOptions.length === 0) return alert("Error: No hay opciones generadas o ID de partido.");
       
-      const winningOption = currentOptions[winningOptionIndex];
+      // Buscamos la opción en el array original de 5 opciones
+      const winningOption = generatedOptions[winningOptionIndex];
       
       const { error } = await supabase
           .from('matches')
@@ -713,8 +862,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) return console.error("Error al finalizar el equipo:", error);
 
       alert(`¡Opción ${winningOptionIndex + 1} publicada como equipo final!`);
-      // Simular clic en el botón para pintar en pizarra (opcional)
-      document.getElementById(`option-card-${winningOptionIndex}`).querySelector('.select-opt-btn').click();
+      // Ocultamos la vista de opciones y forzamos la vista de la pizarra
+      document.getElementById('teamsResult').innerHTML = ''; 
+      showPlayerResult(winningOption, true); 
   }
 
 
@@ -724,7 +874,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return [...t].sort((a,b)=>order[a.position]-order[b.position]).map(p=>`<li><span>${p.name}</span></li>`).join('');
   }
 
-  // --- MODO JUGADOR: AUTENTICACIÓN Y VOTACIÓN (¡NUEVO BLOQUE!) ---
+  // --- MODO JUGADOR: AUTENTICACIÓN Y VOTACIÓN ---
   async function searchPlayerByCode() {
       const code = playerCodeInput.value.trim().toUpperCase();
       if (!code) return alert("Introduce tu código de jugador.");
@@ -740,12 +890,10 @@ document.addEventListener('DOMContentLoaded', () => {
           return alert("Código no encontrado. Revisa tu código.");
       }
 
-      // Jugador encontrado. Guardamos su ficha.
       activePlayerData = data;
       activePlayerId = data.id;
 
       document.getElementById('foundPlayerName').textContent = data.name;
-      // IMPORTANTE: NO MOSTRAMOS foundPlayerPos ni foundPlayerRating
       
       document.getElementById('playerFound').classList.remove('hidden');
       playerCodeInput.disabled = true;
@@ -757,7 +905,6 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('votingView').classList.remove('hidden');
       document.getElementById('lobbyStatus').textContent = "Selecciona tu opción favorita.";
 
-      // 1. Cargar las opciones de voto y suscribirse para el resultado final
       await fetchVotingOptions();
       listenToMatchStatus();
   }
@@ -765,16 +912,21 @@ document.addEventListener('DOMContentLoaded', () => {
   async function fetchVotingOptions() {
       const { data, error } = await supabase
           .from('matches')
-          .select('teams_options')
+          .select('teams_options, status, final_teams_result')
           .eq('id', currentMatchId)
           .single();
       
       const container = document.getElementById('votingOptionsContainer');
       container.innerHTML = '';
+      
+      if (data && data.status === 'final' && data.final_teams_result) {
+          // Si ya hay resultado final publicado, vamos directo a la pizarra
+          showPlayerResult(data.final_teams_result);
+          return;
+      }
 
       if (error || !data || !data.teams_options || data.teams_options.length === 0) {
           container.innerHTML = '<p style="color:#f87171;">El Míster aún no ha publicado las opciones de voto. Esperando...</p>';
-          // Configurar una escucha para cuando las opciones se publiquen
           listenToMatchStatus(true); 
           return;
       }
@@ -850,6 +1002,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function listenToMatchStatus(isInitialFetch = false) {
+      supabase.removeChannel(supabase.channel('match-updates'));
+      
       supabase
       .channel('match-updates')
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'matches', filter: `id=eq.${currentMatchId}` }, payload => {
@@ -859,19 +1013,22 @@ document.addEventListener('DOMContentLoaded', () => {
               // El míster ha publicado el resultado final
               showPlayerResult(matchData.final_teams_result);
           } else if (isInitialFetch && matchData.status === 'voting' && matchData.teams_options) {
-               // El míster acaba de publicar las opciones de voto (cuando el jugador estaba esperando)
+               // El míster acaba de publicar las opciones de voto
               fetchVotingOptions();
           }
       })
       .subscribe();
   }
 
-  function showPlayerResult(resultData) {
-      playerLobby.style.display = 'none';
+  function showPlayerResult(resultData, isCoachView = false) {
+      if (!isCoachView) {
+          playerLobby.style.display = 'none';
+      }
       appContent.classList.remove('hidden');
       
       document.querySelectorAll('.box').forEach(b => {
-         if(b.id !== 'fieldSection') b.style.display = 'none';
+         // Oculta todas las cajas del Coach excepto la Pizarra
+         if(b.id !== 'fieldSection' && b.id !== 'authBox') b.style.display = 'none';
       });
       
       const fieldSection = document.getElementById('fieldSection');
@@ -880,26 +1037,36 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const fieldPlaceholder = document.getElementById('fullField');
       
+      // Limpiar pizarra
       fieldPlaceholder.querySelectorAll('.player-token').forEach(e => e.remove());
+      
+      // Dibujar equipos
       drawTeamOnUnifiedField(resultData.teamA, 'token-black', 'bottom', fieldPlaceholder);
       drawTeamOnUnifiedField(resultData.teamB, 'token-white', 'top', fieldPlaceholder);
       
-      const isInTeamA = resultData.teamA.some(p => p.id === activePlayerId);
-      const isInTeamB = resultData.teamB.some(p => p.id === activePlayerId);
+      // Mostrar mensaje al jugador
+      if (!isCoachView) {
+          const isInTeamA = resultData.teamA.some(p => p.id === activePlayerId);
+          const isInTeamB = resultData.teamB.some(p => p.id === activePlayerId);
 
-      let teamColor = 'SUPLENTE (no convocado)';
-      if (isInTeamA) { teamColor = 'NEGRO'; }
-      else if (isInTeamB) { teamColor = 'BLANCO'; }
-      
-      let resultMessage = document.querySelector('#fieldSection h3.result-msg');
-      if (!resultMessage) {
-          resultMessage = document.createElement('h3');
-          resultMessage.className = 'result-msg';
-          resultMessage.style.textAlign = 'center';
-          fieldPlaceholder.before(resultMessage);
+          let teamColor = 'SUPLENTE (no convocado)';
+          if (isInTeamA) { teamColor = 'NEGRO'; }
+          else if (isInTeamB) { teamColor = 'BLANCO'; }
+          
+          let resultMessage = document.querySelector('#fieldSection h3.result-msg');
+          if (!resultMessage) {
+              resultMessage = document.createElement('h3');
+              resultMessage.className = 'result-msg';
+              resultMessage.style.textAlign = 'center';
+              fieldPlaceholder.before(resultMessage);
+          }
+          resultMessage.style.color = teamColor === 'NEGRO' ? '#334155' : (teamColor === 'BLANCO' ? '#f1f5f9' : '#94a3b8');
+          resultMessage.textContent = `¡Estás en el EQUIPO ${teamColor}!`;
+      } else {
+          // Ocultar mensaje del jugador si es el míster
+          let resultMessage = document.querySelector('#fieldSection h3.result-msg');
+          if(resultMessage) resultMessage.remove();
       }
-      resultMessage.style.color = teamColor === 'NEGRO' ? '#334155' : (teamColor === 'BLANCO' ? '#f1f5f9' : '#94a3b8');
-      resultMessage.textContent = `¡Estás en el EQUIPO ${teamColor}!`;
       
       fieldSection.scrollIntoView({behavior: "smooth"});
   }
@@ -969,7 +1136,7 @@ document.addEventListener('DOMContentLoaded', () => {
     el.appendChild(l);
     
     // Solo permitimos arrastrar en el modo entrenador 
-    if (div === fullField) {
+    if (currentUser) {
         el.addEventListener('mousedown', startDrag);
         el.addEventListener('touchstart', startDrag, {passive: false});
     } else {
