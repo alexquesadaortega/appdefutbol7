@@ -200,7 +200,7 @@ button.select-btn.selected { background: var(--accent); color: #000; border: 1px
     </div>
   </div>
 
-  <div id="votingView" class.="hidden">
+  <div id="votingView" class="hidden">
     <h3 style="color: var(--primary);">Opciones del Míster</h3>
     <p id="votingHeader" style="font-size:0.85rem; color:var(--text-muted);">Mira como van los votos y elige tu favorita.</p>
     <div id="votingOptionsContainer"></div>
@@ -285,10 +285,9 @@ button.select-btn.selected { background: var(--accent); color: #000; border: 1px
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // --- CONFIGURACIÓN SUPABASE ---
-  // ! CAMBIA ESTOS DATOS POR LOS TUYOS DE SUPABASE
+  // --- CONFIGURACIÓN SUPABASE (¡ACTUALIZA ESTO!) ---
   const SUPABASE_URL = 'https://vayholflhqoyflbvuusa.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheWhvbGZsaHFveWZsYnZ1dXNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNzc5NjcsImV4cCI6MjA3ODY1Mzk2N30.QxD4_XbYlQarPRUcmoQQclw8cCnnzRiHZcYzSsUXGDA' ;
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheWhvbGZsaHFveWZsYnZ1dXNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNzc5NjcsImV4cCI6MjA3ODY1Mzk2N30.QxD4_XbYlQarPRUcmoQQclw8cCnnzRiHZcYzSsUXGDA' ; // Reemplaza con tu Key Anon
   let supabase;
   try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e) { console.error("Error Supabase", e); }
 
@@ -298,11 +297,11 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentMatchId = null; 
   let activePlayerId = null; 
   let activePlayerData = null; 
-  let allVotes = []; // Guardar votos en vivo
+  let allVotes = []; 
   
   let generatedOptions = []; 
   let selectedVotingOptions = []; 
-  let pendingVoteIndex = null; // Para la confirmación
+  let pendingVoteIndex = null; 
 
   // Para el debounce de la pizarra
   let saveFormationTimeout = null; 
@@ -382,6 +381,8 @@ document.addEventListener('DOMContentLoaded', () => {
       return `${shortName}${randomNum}`;
   }
   function renderListSimple(t) { return [...t].map(p=>`<li><span>${p.name}</span></li>`).join(''); }
+  function showError(msg) { generateError.textContent = msg; generateError.style.display = 'block'; }
+  function shuffle(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
   
   // --- AUTH (COACH) ---
   async function handleAuth(type) { 
@@ -414,6 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('matchControlSubtitle').textContent = 'Genera 5 opciones para seleccionar las 3 mejores para la votación.';
       document.getElementById('btnGenerateTeams').style.display = 'block';
       document.getElementById('teamsResult').innerHTML = ''; 
+      document.getElementById('fieldSection').classList.add('hidden'); // Ocultar campo al iniciar
       await loadPlayers(); 
   }
 
@@ -449,7 +451,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (match.status === 'final' && match.final_teams_result) {
         // Pizarra para el Míster
         showPlayerResult(match.final_teams_result, true, match.current_formation); 
-        listenToFieldChanges(); // El míster también escucha para reactivar la sincronización
+        listenToFieldChanges();
         return;
     }
 
@@ -461,9 +463,86 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // --- GESTIÓN DE JUGADORES (CRUD) ---
+
+  async function loadPlayers() {
+      const { data, error } = await supabase
+          .from('players')
+          .select('*, id')
+          .eq('user_id', currentUser.id)
+          .order('skill', { ascending: false });
+
+      if (error) { 
+          console.error("Error loading players:", error); 
+          return; 
+      }
+      allPlayers = data;
+      renderList();
+  }
+
+  async function addPlayer() {
+      const playerNameEl = document.getElementById('playerName');
+      const playerSkillEl = document.getElementById('playerSkill');
+      const playerPositionEl = document.getElementById('playerPosition');
+
+      const playerName = playerNameEl.value.trim();
+      const playerSkill = parseFloat(playerSkillEl.value);
+      const playerPosition = playerPositionEl.value;
+
+      if (!playerName || isNaN(playerSkill)) return alert("Rellena nombre y nota.");
+
+      const code = generatePlayerCode(playerName);
+      
+      const { error } = await supabase
+          .from('players')
+          .insert([{ user_id: currentUser.id, name: playerName, skill: playerSkill, position: playerPosition, code: code }]);
+
+      if (error) { 
+          console.error("Error adding player:", error); 
+          alert("Error al añadir jugador. Revisa la consola (F12) para detalles.");
+          return; 
+      }
+      
+      playerNameEl.value = '';
+      playerSkillEl.value = '';
+      await loadPlayers();
+  }
+
+  function renderList() {
+      playersListEl.innerHTML = '';
+      document.getElementById('playerCount').textContent = `(${allPlayers.length})`;
+
+      const fragment = document.createDocumentFragment();
+
+      allPlayers.forEach(p => {
+          const row = document.createElement('div');
+          row.className = 'player-row';
+          row.innerHTML = `
+              <div>
+                  <input type="checkbox" class="p-select" checked data-player-id="${p.id}">
+                  ${p.name}
+                  <span class="tag ${p.position}">${p.position}</span>
+              </div>
+              <div style="display:flex; gap:10px; align-items:center;">
+                  <span class="rating-badge">${p.skill ? p.skill.toFixed(1) : 'N/A'}</span>
+                  <button onclick="window.deletePlayer(${p.id})" class="outline" style="font-size:0.7rem; color:#f87171; border-color:#f87171;">X</button>
+              </div>
+          `;
+          fragment.appendChild(row);
+      });
+
+      playersListEl.appendChild(fragment);
+  }
+
+  window.deletePlayer = async function (playerId) {
+      if (!confirm('¿Seguro que quieres eliminar este jugador?')) return;
+      const { error } = await supabase.from('players').delete().eq('id', playerId);
+      if (error) { console.error("Error deleting player:", error); return; }
+      await loadPlayers();
+  }
+
   // --- FUNCIONES DE LA PIZARRA EN TIEMPO REAL ---
 
-  // 1. EL MÍSTER GUARDA LA POSICIÓN (PUBLISHER)
   async function saveFormation() {
       const tokens = document.querySelectorAll('.player-token');
       const formationData = Array.from(tokens).map(token => ({
@@ -480,9 +559,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) console.error("Error al guardar formación:", error);
   }
 
-  // 2. ESCUCHA DE CAMBIOS DE POSICIÓN (SUBSCRIBER)
   function listenToFieldChanges() {
-      supabase.removeChannel(supabase.channel('field-sync'));
+      // Remover el canal anterior antes de suscribirse de nuevo
+      supabase.removeChannel(supabase.channel('field-sync')); 
+      
       supabase.channel('field-sync')
       .on('postgres_changes', { 
           event: 'UPDATE', 
@@ -496,26 +576,24 @@ document.addEventListener('DOMContentLoaded', () => {
       }).subscribe();
   }
 
-  // 3. ACTUALIZAR POSICIÓN EN PANTALLA
   function updateFieldDisplay(formationData) {
       if (!formationData || !Array.isArray(formationData)) return;
 
       formationData.forEach(data => {
           const token = document.querySelector(`.player-token[data-player-id="${data.playerId}"]`);
           if (token) {
-              // Aplicar posición con una pequeña transición CSS
               token.style.left = data.x + 'px';
               token.style.top = data.y + 'px';
           }
       });
   }
 
-  // --- DRAG AND DROP ACTUALIZADO ---
+  // --- DRAG AND DROP ---
   let activeItem = null; 
   let isDragging = false;
 
   function startDrag(e) {
-    if (!currentUser) return; // Solo el míster puede arrastrar
+    if (!currentUser) return;
 
     const evt = e.type === 'touchstart' ? e.touches[0] : e;
     activeItem = e.currentTarget;
@@ -531,15 +609,10 @@ document.addEventListener('DOMContentLoaded', () => {
         let newLeft = mv.clientX - parentRect.left - offsetX;
         let newTop = mv.clientY - parentRect.top - offsetY;
 
-        // Limitar movimiento dentro del campo (320x600, token 42x42)
         newLeft = Math.max(0, Math.min(newLeft, 320 - 42));
         newTop = Math.max(0, Math.min(newTop, 600 - 42));
 
         activeItem.style.left = newLeft + 'px'; activeItem.style.top = newTop + 'px';
-        
-        // Debounce para guardar la posición mientras se arrastra (opcional, menos writes)
-        // clearTimeout(saveFormationTimeout);
-        // saveFormationTimeout = setTimeout(saveFormation, 100); 
     };
     
     const upHandler = () => {
@@ -548,7 +621,6 @@ document.addEventListener('DOMContentLoaded', () => {
         activeItem = null;
         isDragging = false;
         
-        // **GUARDA LA POSICIÓN FINAL AL SOLTAR**
         clearTimeout(saveFormationTimeout);
         saveFormationTimeout = setTimeout(saveFormation, SAVE_DEBOUNCE_TIME);
     };
@@ -557,44 +629,297 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('touchmove', moveHandler, {passive:false}); document.addEventListener('touchend', upHandler);
   }
 
-
-  // --- RESTO DE FUNCIONES (Jugador, Voto, Listas) ---
+  // --- GENERACIÓN DE EQUIPOS (Equilibrio) ---
   
-  // ... (Funciones de Listas, Generación de Equipos, etc. - Sin cambios)
-  async function loadPlayers() { /* ... */ }
-  async function addPlayer() { /* ... */ }
-  async function deletePlayer(playerId) { /* ... */ }
-  function renderList() { /* ... */ }
-  function generateTeamOptions() { /* ... */ }
-  function showError(msg) { /* ... */ }
-  function shuffle(arr) { /* ... */ }
-  function createStrictMatch(originalPool) { /* ... */ }
-  function displayOptionsForSelection(options) { /* ... */ }
-  function handleOptionSelection(e) { /* ... */ }
-  function updatePublishButtonState() { /* ... */ }
-  async function publishVotingOptions() { /* ... */ }
-  function showShareModal(link) { /* ... */ }
-  function showAdvancedAlert(link) { /* ... */ }
-  function displayControlRoomOptions(options) { /* ... */ }
+  function createStrictMatch(originalPool) {
+      const players = shuffle([...originalPool]);
+      const teamA = [];
+      const teamB = [];
+      let skillA = 0;
+      let skillB = 0;
+      
+      const positions = { portero: [], defensa: [], delantero: [] };
+      players.forEach(p => positions[p.position].push(p));
+
+      // Asignar porteros (alternando)
+      if(positions.portero.length >= 2) {
+          teamA.push(positions.portero.shift()); skillA += teamA[teamA.length-1].skill;
+          teamB.push(positions.portero.shift()); skillB += teamB[teamB.length-1].skill;
+      } else if (positions.portero.length === 1) {
+          teamA.push(positions.portero.shift()); skillA += teamA[teamA.length-1].skill;
+          teamB.push({ id: 0, name: 'Portero S.', skill: 0.1, position: 'portero' }); 
+      }
+
+      const fieldPlayers = positions.defensa.concat(positions.delantero);
+      shuffle(fieldPlayers);
+
+      // Asignar resto de jugadores
+      fieldPlayers.forEach(p => {
+          if (teamA.length < 7 && (skillA <= skillB || teamB.length === 7)) {
+              teamA.push(p); skillA += p.skill;
+          } else if (teamB.length < 7 && (skillB < skillA || teamA.length === 7)) {
+              teamB.push(p); skillB += p.skill;
+          } else {
+             // Si el equipo se llena, ponerlo de suplente o en el otro equipo si hay sitio
+             if (teamA.length < 7) { teamA.push(p); skillA += p.skill; }
+             else if (teamB.length < 7) { teamB.push(p); skillB += p.skill; }
+          }
+      });
+
+      // Rellenar suplentes si es necesario para tener 7
+      while (teamA.length < 7) teamA.push({ id: 0, name: 'S.', skill: 0.1, position: 'suplente' });
+      while (teamB.length < 7) teamB.push({ id: 0, name: 'S.', skill: 0.1, position: 'suplente' });
+      
+      const diff = Math.abs(skillA - skillB);
+      
+      return { 
+          teamA: teamA.sort((a,b) => (a.position === 'portero' ? -1 : 1) || b.skill - a.skill), 
+          teamB: teamB.sort((a,b) => (a.position === 'portero' ? -1 : 1) || b.skill - a.skill), 
+          skillA: skillA, 
+          skillB: skillB, 
+          difference: diff
+      };
+  }
+
+  function generateTeamOptions() {
+      generateError.style.display = 'none';
+      const selectedPlayerIDs = Array.from(document.querySelectorAll('.p-select:checked')).map(c => parseInt(c.dataset.playerId));
+      
+      if (selectedPlayerIDs.length < 8) {
+          return showError('Debes seleccionar al menos 8 jugadores para generar equipos.');
+      }
+      
+      const selectedPlayers = allPlayers.filter(p => selectedPlayerIDs.includes(p.id));
+      
+      generatedOptions = [];
+      for (let i = 0; i < 5; i++) {
+          generatedOptions.push(createStrictMatch(selectedPlayers));
+      }
+      
+      generatedOptions.sort((a, b) => a.difference - b.difference);
+      displayOptionsForSelection(generatedOptions);
+  }
+
+  function displayOptionsForSelection(options) {
+      const resultsDiv = document.getElementById('teamsResult');
+      resultsDiv.innerHTML = `
+          <h3 style="color:var(--accent);">Selecciona las 3 mejores opciones:</h3>
+          <p style="font-size:0.85rem; color:var(--text-muted);">Las 3 primeras son las más equilibradas.</p>
+      `;
+      
+      options.forEach((opt, index) => {
+          const card = document.createElement('div');
+          card.className = 'option-card';
+          card.dataset.index = index;
+          if (selectedVotingOptions.includes(index)) {
+              card.style.border = '1px solid var(--accent)';
+          }
+          card.innerHTML = `
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <h3 style="margin:0;">Opción ${index + 1}</h3>
+                  <p style="font-size:0.85rem; color:#f87171;">Diferencia: ${opt.difference.toFixed(2)}</p>
+              </div>
+              <div class="team-columns">
+                  <div class="team-col" style="flex:1;">
+                      <h4 style="color:var(--primary);">Team Negro (${opt.skillA.toFixed(1)})</h4>
+                      <ul>${renderListSimple(opt.teamA)}</ul>
+                  </div>
+                  <div class="team-col" style="flex:1;">
+                      <h4 style="color:var(--accent);">Team Blanco (${opt.skillB.toFixed(1)})</h4>
+                      <ul>${renderListSimple(opt.teamB)}</ul>
+                  </div>
+              </div>
+              <button class="select-btn secondary" onclick="handleOptionSelection(event)" data-index="${index}">
+                  ${selectedVotingOptions.includes(index) ? 'SELECCIONADO' : 'SELECCIONAR'}
+              </button>
+          `;
+          resultsDiv.appendChild(card);
+      });
+      updatePublishButtonState();
+  }
+
+  window.handleOptionSelection = function(e) {
+      const index = parseInt(e.target.dataset.index);
+      const card = e.target.closest('.option-card');
+
+      if (selectedVotingOptions.includes(index)) {
+          selectedVotingOptions = selectedVotingOptions.filter(i => i !== index);
+          card.style.border = '1px solid rgba(255,255,255,0.05)';
+          e.target.textContent = 'SELECCIONAR';
+          e.target.classList.remove('selected');
+      } else if (selectedVotingOptions.length < 3) {
+          selectedVotingOptions.push(index);
+          card.style.border = '1px solid var(--accent)';
+          e.target.textContent = 'SELECCIONADO';
+          e.target.classList.add('selected');
+      } else {
+          alert('Solo puedes seleccionar 3 opciones para la votación.');
+      }
+      updatePublishButtonState();
+  }
+
+  function updatePublishButtonState() {
+      let publishBtn = document.getElementById('btnPublishVoting');
+      if (!publishBtn) {
+          publishBtn = document.createElement('button');
+          publishBtn.id = 'btnPublishVoting';
+          publishBtn.className = 'primary';
+          publishBtn.textContent = 'Publicar 3 Opciones y Abrir Votación';
+          publishBtn.style.marginTop = '25px';
+          publishBtn.addEventListener('click', publishVotingOptions);
+          document.getElementById('teamsResult').appendChild(publishBtn);
+      }
+      
+      publishBtn.disabled = selectedVotingOptions.length !== 3;
+      if (selectedVotingOptions.length === 3) {
+          publishBtn.textContent = 'Publicar 3 Opciones y Abrir Votación';
+      } else {
+          publishBtn.textContent = `Selecciona ${3 - selectedVotingOptions.length} más...`;
+      }
+  }
+
+  async function publishVotingOptions() {
+      if (selectedVotingOptions.length !== 3) return;
+      
+      const votingTeams = selectedVotingOptions.map(index => generatedOptions[index]);
+      
+      const { data: match, error } = await supabase
+          .from('matches')
+          .insert({ coach_id: currentUser.id, teams_options: votingTeams, status: 'voting' })
+          .select().single();
+          
+      if (error) {
+          console.error("Error al publicar:", error);
+          return alert("Error al publicar la votación. Inténtalo de nuevo.");
+      }
+      
+      currentMatchId = match.id;
+      
+      const matchLink = window.location.origin + window.location.pathname + `?match_id=${currentMatchId}`;
+      showAdvancedAlert(matchLink);
+      
+      // Pasar a modo Sala de Control
+      document.getElementById('teamsResult').innerHTML = '';
+      document.getElementById('btnGenerateTeams').style.display = 'none';
+      document.getElementById('matchControlTitle').textContent = '📊 Sala de Control';
+      document.getElementById('matchControlSubtitle').textContent = 'Votación en curso. Revisa los resultados en tiempo real.';
+      displayControlRoomOptions(votingTeams);
+      listenToVotes(); 
+      window.history.replaceState(null, null, matchLink);
+  }
+
+  function showAdvancedAlert(link) {
+      alert(`¡Votación Publicada! Comparte este enlace con los jugadores:\n\n${link}`);
+  }
+
+  function displayControlRoomOptions(options) {
+      votingOptionsContainer.innerHTML = ''; 
+      options.forEach((opt, index) => {
+          const card = document.createElement('div');
+          card.className = 'option-card';
+          card.innerHTML = `
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <h3 style="margin:0;">Opción ${index + 1} <span id="voteCount-${index}" style="color:var(--accent); font-size:0.9em;">(0 votos)</span></h3>
+              </div>
+              <div class="team-columns">
+                  <div class="team-col" style="flex:1;">
+                      <h4 style="color:var(--primary);">Team Negro (${opt.skillA.toFixed(1)})</h4>
+                      <ul>${renderListSimple(opt.teamA)}</ul>
+                  </div>
+                  <div class="team-col" style="flex:1;">
+                      <h4 style="color:var(--accent);">Team Blanco (${opt.skillB.toFixed(1)})</h4>
+                      <ul>${renderListSimple(opt.teamB)}</ul>
+                  </div>
+              </div>
+          `;
+          votingOptionsContainer.appendChild(card);
+      });
+      // Añadir botón de finalización
+      let finalizeBtn = document.getElementById('btnFinalizeVoting');
+      if (!finalizeBtn) {
+          finalizeBtn = document.createElement('button');
+          finalizeBtn.id = 'btnFinalizeVoting';
+          finalizeBtn.className = 'primary';
+          finalizeBtn.textContent = 'Finalizar Votación y Seleccionar Equipo';
+          finalizeBtn.style.marginTop = '25px';
+          finalizeBtn.addEventListener('click', () => showFinalizeModal(allVotes));
+          votingOptionsContainer.parentNode.appendChild(finalizeBtn);
+      }
+  }
 
   // --- VOTOS EN TIEMPO REAL ---
-  function listenToVotes() { /* ... */ }
-  function updateVoteDisplay() { /* ... */ }
-  function showFinalizeModal(voteCounts) { /* ... */ }
+  function listenToVotes() {
+      supabase.removeChannel(supabase.channel('match-votes-channel'));
+      supabase.channel('match-votes-channel')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'match_votes', filter: `match_id=eq.${currentMatchId}` }, payload => {
+          updateVoteDisplay();
+      }).subscribe();
+      updateVoteDisplay(); // Cargar votos iniciales
+  }
+
+  async function updateVoteDisplay() {
+      const { data: votes, error } = await supabase.from('match_votes').select('voted_option').eq('match_id', currentMatchId);
+      if (error) { console.error("Error cargando votos:", error); return; }
+      
+      allVotes = votes.map(v => v.voted_option);
+      const counts = [0, 0, 0];
+      allVotes.forEach(option => counts[option]++);
+      
+      for(let i = 0; i < 3; i++) {
+          const el = document.getElementById(`voteCount-${i}`);
+          if(el) el.textContent = `(${counts[i]} votos)`;
+      }
+      
+      let totalVoters = document.getElementById('totalVoters');
+      if (!totalVoters) {
+          totalVoters = document.createElement('p');
+          totalVoters.id = 'totalVoters';
+          totalVoters.style.marginTop = '15px';
+          document.getElementById('matchControlBox').appendChild(totalVoters);
+      }
+      totalVoters.textContent = `Total de votos registrados: ${allVotes.length}`;
+  }
+  
+  function showFinalizeModal(voteCounts) {
+      const counts = [0, 0, 0];
+      voteCounts.forEach(option => counts[option]++);
+      
+      const winningIndex = counts.indexOf(Math.max(...counts));
+      
+      if (!confirm(`¿Estás seguro de finalizar la votación?\n\nLa Opción ${winningIndex + 1} es la ganadora provisional con ${counts[winningIndex]} votos.`)) return;
+      
+      window.finalizeTeam(winningIndex);
+  }
   
   window.finalizeTeam = async function (winningIndex) { 
       const winningOption = generatedOptions[winningIndex];
-      // Aquí se inicializa la formación al finalizar
       const initialFormation = createInitialFormationData(winningOption); 
       
       const { error } = await supabase.from('matches').update({ status: 'final', final_teams_result: winningOption, current_formation: initialFormation }).eq('id', currentMatchId);
-      if (error) return alert("Error finalizando.");
-      document.getElementById('teamsResult').innerHTML = ''; 
+      if (error) return alert("Error finalizando el partido. Revisa la consola.");
+      
+      // Limpiar y mostrar resultado
+      document.getElementById('matchControlBox').style.display = 'none';
       showPlayerResult(winningOption, true, initialFormation); 
   }
 
   // --- MODO JUGADOR: BÚSQUEDA Y VOTO ---
-  async function searchPlayerByCode() { /* ... */ }
+  async function searchPlayerByCode() {
+      const code = playerCodeInput.value.trim().toUpperCase();
+      if (!code) return alert("Introduce tu código.");
+      
+      const { data, error } = await supabase.from('players').select('*').eq('code', code).single();
+      
+      if (error || !data) {
+          document.getElementById('playerFound').classList.add('hidden');
+          return alert("Código de jugador no encontrado.");
+      }
+      
+      activePlayerId = data.id;
+      activePlayerData = data;
+      document.getElementById('foundPlayerName').textContent = data.name;
+      document.getElementById('playerFound').classList.remove('hidden');
+  }
 
   async function enterVoting() {
       document.getElementById('playerAuthForm').classList.add('hidden');
@@ -614,10 +939,11 @@ document.addEventListener('DOMContentLoaded', () => {
           return; 
       }
       if (!data || !data.teams_options) {
-          votingOptionsContainer.innerHTML = '<p>Esperando opciones...</p>';
+          votingOptionsContainer.innerHTML = '<p>Esperando opciones del Míster...</p>';
           return;
       }
       
+      // Comprobar si ya votó
       const { data: voteData } = await supabase.from('match_votes').select('id').eq('match_id', currentMatchId).eq('player_id', activePlayerId).single();
       
       if (voteData) {
@@ -626,26 +952,94 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
       }
       
-      document.getElementById('votingHeader').textContent = 'Mira como van los votos y elige tu favorita.';
       renderVotingOptions(data.teams_options);
   }
 
-  function renderVotingOptions(options) { /* ... */ }
-  function renderReadOnlyVotingOptions(options) { /* ... */ }
-  function initiateVote(e) { /* ... */ }
-  async function executeVote() { /* ... */ }
+  function renderVotingOptions(options) {
+      votingOptionsContainer.innerHTML = '';
+      options.forEach((opt, index) => {
+          const card = document.createElement('div');
+          card.className = 'option-card';
+          card.innerHTML = `
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <h3 style="margin:0;">Opción ${index + 1} <span id="voteCount-${index}" style="color:var(--accent); font-size:0.9em;">(0 votos)</span></h3>
+              </div>
+              <div class="team-columns">
+                  <div class="team-col" style="flex:1;">
+                      <h4 style="color:var(--primary);">Team Negro (${opt.skillA.toFixed(1)})</h4>
+                      <ul>${renderListSimple(opt.teamA)}</ul>
+                  </div>
+                  <div class="team-col" style="flex:1;">
+                      <h4 style="color:var(--accent);">Team Blanco (${opt.skillB.toFixed(1)})</h4>
+                      <ul>${renderListSimple(opt.teamB)}</ul>
+                  </div>
+              </div>
+              <button class="primary" onclick="initiateVote(event)" data-index="${index}" style="background:var(--primary); margin-top:15px;">VOTAR POR ESTA</button>
+          `;
+          votingOptionsContainer.appendChild(card);
+      });
+  }
+  
+  function renderReadOnlyVotingOptions(options) {
+      votingOptionsContainer.innerHTML = '';
+      options.forEach((opt, index) => {
+          const card = document.createElement('div');
+          card.className = 'option-card';
+          card.innerHTML = `
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <h3 style="margin:0;">Opción ${index + 1} <span id="voteCount-${index}" style="color:var(--accent); font-size:0.9em;">(0 votos)</span></h3>
+              </div>
+              <div class="team-columns">
+                  <div class="team-col" style="flex:1;">
+                      <h4 style="color:var(--primary);">Team Negro (${opt.skillA.toFixed(1)})</h4>
+                      <ul>${renderListSimple(opt.teamA)}</ul>
+                  </div>
+                  <div class="team-col" style="flex:1;">
+                      <h4 style="color:var(--accent);">Team Blanco (${opt.skillB.toFixed(1)})</h4>
+                      <ul>${renderListSimple(opt.teamB)}</ul>
+                  </div>
+              </div>
+          `;
+          votingOptionsContainer.appendChild(card);
+      });
+  }
+
+  window.initiateVote = function(e) {
+      pendingVoteIndex = parseInt(e.target.dataset.index);
+      document.getElementById('confirmOptionName').textContent = `Opción ${pendingVoteIndex + 1}`;
+      voteConfirmModal.classList.remove('hidden');
+  }
+
+  async function executeVote() {
+      if (pendingVoteIndex === null) return;
+      
+      const { error } = await supabase
+          .from('match_votes')
+          .insert({ match_id: currentMatchId, player_id: activePlayerId, voted_option: pendingVoteIndex });
+          
+      voteConfirmModal.classList.add('hidden');
+      
+      if (error) {
+          console.error("Error al votar:", error);
+          alert("Error al registrar el voto.");
+      } else {
+          document.getElementById('votingHeader').textContent = '✅ VOTO REGISTRADO. Observa la tendencia en vivo.';
+          fetchVotingOptions(); // Cargar la vista de solo lectura
+      }
+      pendingVoteIndex = null;
+  }
 
   function listenToMatchStatus(initial) {
-      supabase.channel('match-updates').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'matches', filter: `id=eq.${currentMatchId}` }, payload => {
+      supabase.channel('match-updates')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'matches', filter: `id=eq.${currentMatchId}` }, payload => {
           if (payload.new.status === 'final') {
-             // Redirigir a pizarra y pasarle la formación inicial (o la última guardada)
              showPlayerResult(payload.new.final_teams_result, !activePlayerId, payload.new.current_formation);
           }
           else if (initial && payload.new.status === 'voting') fetchVotingOptions();
       }).subscribe();
   }
 
-  // --- DIBUJO Y DRAG (ACTUALIZADO PARA SINCRONIZACIÓN) ---
+  // --- DIBUJO DE LA PIZARRA ---
   
   function createInitialFormationData(result) {
       const formationData = [];
@@ -655,24 +1049,39 @@ document.addEventListener('DOMContentLoaded', () => {
       const coordsA = getInitialCoords('bottom', teamA);
       const coordsB = getInitialCoords('top', teamB);
       
-      teamA.forEach((p, i) => formationData.push({ playerId: String(p.id), x: coordsA[i].x, y: coordsA[i].y }));
-      teamB.forEach((p, i) => formationData.push({ playerId: String(p.id), x: coordsB[i].x, y: coordsB[i].y }));
+      teamA.forEach((p, i) => {
+          if (p.id !== 0) { formationData.push({ playerId: String(p.id), x: coordsA[i].x, y: coordsA[i].y }); }
+      });
+      teamB.forEach((p, i) => {
+          if (p.id !== 0) { formationData.push({ playerId: String(p.id), x: coordsB[i].x, y: coordsB[i].y }); }
+      });
       
       return formationData;
   }
 
   function getInitialCoords(half, team) {
     const isBottom = half === 'bottom';
-    const coords = {
-        portero: [{x:140, y: isBottom?520:40}], 
-        defensa: [{x:50, y: isBottom?450:100}, {x:140, y: isBottom?450:100}, {x:230, y: isBottom?450:100}], 
-        delantero: [{x:140, y: isBottom?350:200}] 
+    // Coordenadas absolutas basadas en el campo de 320x600 (ajustadas al centro del token 42x42)
+    const offset = 21; // Radio del token
+    const baseCoords = {
+        portero: [{x:160-offset, y: isBottom?540-offset:60-offset}], 
+        defensa: [{x:60-offset, y: isBottom?470-offset:130-offset}, {x:160-offset, y: isBottom?470-offset:130-offset}, {x:260-offset, y: isBottom?470-offset:130-offset}], 
+        delantero: [{x:80-offset, y: isBottom?350-offset:250-offset}, {x:160-offset, y: isBottom?300-offset:300-offset}, {x:240-offset, y: isBottom?350-offset:250-offset}] 
     };
+    
     const playerCoords = [];
     
+    // Rellenar las posiciones prioritarias
     team.forEach(p => {
-       let pos = {x: 140, y: isBottom?300:250}; // Default/Substitute position
-       if(coords[p.position] && coords[p.position].length) pos = coords[p.position].shift();
+       if (p.id === 0) { // Suplente ficticio
+           playerCoords.push({x: 140, y: isBottom?600:0}); 
+           return;
+       }
+       
+       let pos = {x: 140, y: isBottom?300:250}; // Posición de reserva si falla
+       if(baseCoords[p.position] && baseCoords[p.position].length) {
+           pos = baseCoords[p.position].shift();
+       }
        playerCoords.push(pos);
     });
     return playerCoords;
@@ -680,13 +1089,6 @@ document.addEventListener('DOMContentLoaded', () => {
   
   function showPlayerResult(result, isCoach, initialFormation) {
       document.getElementById('playerLobby').style.display = 'none';
-      appContent.classList.remove('hidden');
-      appContent.style.display = 'block';
-      
-      if(!isCoach) {
-          if(addPlayerBox) addPlayerBox.style.display = 'none';
-          if(playerListBox) playerListBox.style.display = 'none';
-      }
       if(matchControlBox) matchControlBox.style.display = 'none';
 
       const field = document.getElementById('fieldSection');
@@ -696,33 +1098,33 @@ document.addEventListener('DOMContentLoaded', () => {
       const ph = document.getElementById('fullField');
       ph.querySelectorAll('.player-token').forEach(e=>e.remove());
       
-      // Dibujar las fichas en la posición inicial (si no hay formación guardada) o en la última guardada
       const formation = initialFormation || createInitialFormationData(result);
       
       drawTeamOnUnifiedField(result.teamA, 'token-black', 'bottom', ph, isCoach, formation);
       drawTeamOnUnifiedField(result.teamB, 'token-white', 'top', ph, isCoach, formation);
       
-      listenToFieldChanges(); // **EMPEZAR A ESCUCHAR CAMBIOS DE LA PIZARRA**
+      listenToFieldChanges();
+      
+      let resultMessage = document.querySelector('#fieldSection h3.result-msg');
+      if (!resultMessage) {
+          resultMessage = document.createElement('h3');
+          resultMessage.className = 'result-msg';
+          resultMessage.style.textAlign = 'center';
+          field.prepend(resultMessage);
+      }
       
       if (!isCoach) {
-          // Lógica para jugador (saber su equipo)
-          document.getElementById('fieldStatusMessage').textContent = 'Observa la pizarra en tiempo real.';
           const isInTeamA = result.teamA.some(p => String(p.id) === String(activePlayerId));
           const isInTeamB = result.teamB.some(p => String(p.id) === String(activePlayerId));
           let teamColor = 'SUPLENTE';
           if (isInTeamA) teamColor = 'NEGRO';
           else if (isInTeamB) teamColor = 'BLANCO';
           
-          let resultMessage = document.querySelector('#fieldSection h3.result-msg');
-          if (!resultMessage) {
-              resultMessage = document.createElement('h3');
-              resultMessage.className = 'result-msg';
-              resultMessage.style.textAlign = 'center';
-              ph.before(resultMessage);
-          }
           resultMessage.textContent = `¡Estás en el EQUIPO ${teamColor}!`;
+          document.getElementById('fieldStatusMessage').textContent = 'Observa la pizarra en tiempo real.';
           document.getElementById('btnShareWhatsapp').style.display = 'none'; 
       } else {
+          resultMessage.textContent = `Alineación Ganadora (Diferencia: ${result.difference.toFixed(2)})`;
           document.getElementById('fieldStatusMessage').textContent = 'Mueve las fichas y comparte la imagen.';
           document.getElementById('btnShareWhatsapp').style.display = 'flex'; 
       }
@@ -730,29 +1132,33 @@ document.addEventListener('DOMContentLoaded', () => {
       field.scrollIntoView({behavior: "smooth"});
   }
 
-  // Ahora usa la formación guardada o inicial para posicionar las fichas
   function drawTeamOnUnifiedField(team, cls, half, target, isCoach, formation) { 
-      team.forEach((p) => {
+      // Los suplentes ficticios (id=0) no se dibujan en el campo
+      team.filter(p => p.id !== 0).forEach((p) => {
           const playerId = String(p.id);
           const pos = formation.find(f => f.playerId === playerId);
           
+          // Fallback a una posición central si la formación no existe (nunca debería pasar con initialFormation)
+          const fallbackX = 160 - 21;
+          const fallbackY = (half === 'bottom' ? 400 : 200) - 21;
+
           if(pos) {
               createToken(p, target, cls, pos.x, pos.y, isCoach);
+          } else {
+              createToken(p, target, cls, fallbackX, fallbackY, isCoach);
           }
       });
   }
 
-  // Se añadió 'data-player-id' y la clase 'draggable'
   function createToken(p, div, cls, x, y, isCoach) {
     const el = document.createElement('div');
     el.className = `player-token ${cls} ${isCoach ? 'draggable' : ''}`;
-    el.dataset.playerId = String(p.id); // **IMPORTANTE: ID del jugador**
+    el.dataset.playerId = String(p.id);
     el.textContent = p.name.substring(0,2).toUpperCase();
     el.style.left = x+'px'; el.style.top = y+'px';
     const l = document.createElement('div'); l.className='player-label'; l.textContent=p.name;
     el.appendChild(l);
     
-    // Solo el míster tiene los eventos de drag
     if(isCoach) { 
         el.addEventListener('mousedown', startDrag); 
         el.addEventListener('touchstart', startDrag, {passive:false}); 
@@ -760,7 +1166,51 @@ document.addEventListener('DOMContentLoaded', () => {
     div.appendChild(el);
   }
 
-  async function shareFieldsImage() { /* ... */ }
+  async function shareFieldsImage() {
+    btnShare.disabled = true;
+    btnShare.textContent = 'Generando imagen...';
+    
+    // Captura el área del campo
+    const canvas = await html2canvas(document.getElementById('captureArea'), {
+        useCORS: true,
+        backgroundColor: null,
+        scale: 2 // Mayor escala para mejor calidad en dispositivos móviles
+    });
+
+    const dataUrl = canvas.toDataURL('image/png');
+    const filename = `alineacion-${currentMatchId}.png`;
+
+    // Opción 1: Descarga y compartir (solo en navegadores recientes)
+    try {
+        const blob = await (await fetch(dataUrl)).blob();
+        const file = new File([blob], filename, { type: 'image/png' });
+        
+        if (navigator.share && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+                files: [file],
+                title: 'Alineación Táctica',
+                text: '¡Esta es la pizarra del Míster!'
+            });
+        } else {
+             // Fallback a descarga si no puede compartir
+             const a = document.createElement('a');
+             a.href = dataUrl;
+             a.download = filename;
+             document.body.appendChild(a);
+             a.click();
+             document.body.removeChild(a);
+             alert("Imagen descargada. Compártela manualmente por WhatsApp.");
+        }
+
+    } catch(e) {
+        console.error('Error al compartir/descargar:', e);
+        // Fallback simple de copia
+        alert("Error al compartir. Asegúrate de estar en un dispositivo móvil moderno o descarga la imagen.");
+    }
+
+    btnShare.disabled = false;
+    btnShare.textContent = '📲 Enviar Alineación';
+  }
 });
 </script>
 </body>
