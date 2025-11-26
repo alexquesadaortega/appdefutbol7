@@ -685,7 +685,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
   }
   
-  // PUBLICAR OPCIONES Y OBTENER LINK
+  // PUBLICAR OPCIONES Y OBTENER LINK (ACTUALIZADA)
   async function publishVotingOptions() {
       if (selectedVotingOptions.length !== 3) {
           return alert("Debes seleccionar exactamente 3 opciones antes de publicar.");
@@ -730,20 +730,54 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
       }
 
-      // 4. Generar y Copiar el Enlace para Jugadores
+      // 4. Generar Enlace y Mostrar Modal de Compartir
       const link = `${window.location.origin}${window.location.pathname}?match_id=${currentMatchId}`;
       
+      // Actualizar botón de estado
+      publishBtn.innerHTML = '✅ Opciones Publicadas. ¡Comparte!';
+      publishBtn.style.background = 'var(--whatsapp)';
+      
+      showShareModal(link);
+      
+      // Empezar a escuchar votos
+      listenToVotes(); 
+  }
+  
+  // FUNCIÓN PARA MOSTRAR LAS OPCIONES DE COMPARTIR
+  function showShareModal(link) {
+      const defaultMessage = `⚽ ¡A VOTAR! El Míster ha publicado las opciones de equipo. Usa este enlace para votar:`;
+      const whatsappLink = `whatsapp://send?text=${encodeURIComponent(defaultMessage)}\n${encodeURIComponent(link)}`;
+      
+      if (navigator.share) {
+          navigator.share({
+              title: 'Votación Fútbol 7',
+              text: defaultMessage,
+              url: link,
+          }).catch((error) => {
+               // Si el share nativo falla o se cancela, mostramos el alert mejorado
+               showAdvancedAlert(link, whatsappLink);
+          });
+      } else {
+          // Para navegadores de escritorio (sin API share)
+          showAdvancedAlert(link, whatsappLink);
+      }
+  }
+
+  // Función auxiliar para mostrar el enlace cuando el nativo falla o en desktop
+  function showAdvancedAlert(link, whatsappLink) {
+      const linkDisplay = "---------------------------\n" + link + "\n---------------------------";
+      
+      alert(
+          "¡Opciones Publicadas! Ahora comparte el enlace:\n\n" + 
+          linkDisplay +
+          "\n\n👉 Para copiar: presiona OK y el enlace se copiará automáticamente.\n👉 Para enviar por WhatsApp: copia el enlace y pégalo en tu chat."
+      );
+      
+      // Intentar copiar al portapapeles (se ejecuta después del primer alert)
       navigator.clipboard.writeText(link).then(() => {
-          publishBtn.innerHTML = '✅ ¡Opciones Publicadas! Link Copiado';
-          publishBtn.classList.remove('primary');
-          publishBtn.style.background = 'var(--whatsapp)';
-          alert(`¡Opciones de voto publicadas! Copia y envía este enlace a los jugadores:\n${link}`);
-          
-          // La lógica de monitoreo de votos (listenToVotes) debe empezar aquí
-          listenToVotes(); 
+          // Éxito al copiar (la notificación se realiza en el alert anterior)
       }).catch(err => {
-          publishBtn.innerHTML = 'Error al copiar';
-          alert(`Opciones publicadas, pero no se pudo copiar el link. Enlace: ${link}`);
+          console.error("Error al copiar link:", err);
       });
   }
 
@@ -779,7 +813,11 @@ document.addEventListener('DOMContentLoaded', () => {
       optionsToMonitor.forEach(index => voteCounts[index] = 0);
       allVotes.forEach(vote => {
           if (vote.option_index !== undefined) {
-              voteCounts[vote.option_index]++;
+              // Aseguramos que el índice votado está en las opciones seleccionadas
+              const votedIndex = parseInt(vote.option_index);
+              if (optionsToMonitor.includes(votedIndex)) {
+                voteCounts[votedIndex]++;
+              }
           }
       });
       
@@ -814,38 +852,33 @@ document.addEventListener('DOMContentLoaded', () => {
   function showFinalizeModal(voteCounts) {
       const totalVotes = allVotes.length;
       let modalContent = '<h3>Resultados de la Votación</h3>';
-
-      selectedVotingOptions.forEach(index => {
+      
+      const optionsInfo = selectedVotingOptions.map(index => {
           const opt = generatedOptions[index];
           const votes = voteCounts[index] || 0;
           const percentage = totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : 0;
-          
-          modalContent += `
-              <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:10px; margin-bottom:10px;">
-                  <p><strong>Opción ${index + 1}</strong> (Dif. ${opt.diff.toFixed(2)}): <strong>${votes} Votos (${percentage}%)</strong></p>
-                  <button class="primary" onclick="finalizeTeam(${index})" style="padding:10px; font-size:0.9rem;">Elegir Opción ${index + 1} como Final</button>
-              </div>
-          `;
+          return { index, opt, votes, percentage };
       });
       
-      // Uso simple de alert/prompt para el ejemplo (reemplazar por un modal real)
-      if (confirm(`Resultados:\n${modalContent.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ')}\n\n¿Quieres elegir el resultado final ahora?`)) {
-         // Si el usuario quiere, le pedimos el índice.
-         let choice = prompt("Introduce el número de la opción final (1, 2 o 3, si solo seleccionaste 3):\nSi seleccionaste la Opción 1, escribe '0'\nSi seleccionaste la Opción 2, escribe '1'\nSi seleccionaste la Opción 3, escribe '2'");
-         
-         // Debemos mapear la elección del usuario (1, 2, 3) al índice (0, 1, 2)
-         const chosenIndex = parseInt(choice); // El índice ya es 0, 1, o 2 si se basa en el array de 'selectedVotingOptions'
-         
-         if(selectedVotingOptions.includes(chosenIndex)) {
-            finalizeTeam(chosenIndex);
-         } else {
-            alert("Opción no válida.");
-         }
+      let alertMessage = "Resultados de Votación:\n\n";
+      optionsInfo.forEach(info => {
+          alertMessage += `Opción ${info.index + 1} (Dif. ${info.opt.diff.toFixed(2)}): ${info.votes} Votos (${info.percentage}%) \n`;
+      });
+      alertMessage += "\nIntroduce el número de la opción que eliges como final (1, 2 o 3).";
+      
+      // Pedir elección
+      let choice = prompt(alertMessage);
+      const chosenIndex = parseInt(choice) - 1; // Mapear 1, 2, 3 a 0, 1, 2
+      
+      if(selectedVotingOptions.includes(chosenIndex)) {
+          finalizeTeam(chosenIndex);
+      } else if (choice !== null) {
+          alert("Opción no válida o cancelada. Inténtalo de nuevo.");
       }
   }
   
   // PUBLICAR RESULTADO FINAL (COACH)
-  window.finalizeTeam = async function (winningOptionIndex) { // Lo hacemos global para el ejemplo del modal
+  window.finalizeTeam = async function (winningOptionIndex) { // La hacemos global para el ejemplo del modal
       if (!currentMatchId || generatedOptions.length === 0) return alert("Error: No hay opciones generadas o ID de partido.");
       
       // Buscamos la opción en el array original de 5 opciones
