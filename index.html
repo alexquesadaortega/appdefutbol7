@@ -22,7 +22,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-/* --- ESTILOS GENERALES (MANTENIDOS) --- */
+/* --- ESTILOS GENERALES (AQUÍ ESTÁ TODA LA ESTÉTICA ORIGINAL) --- */
   :root { 
     --bg-dark: #0f172a;
     --bg-card: rgba(30, 41, 59, 0.7);
@@ -299,7 +299,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   // --- CONFIG ---
   const SUPABASE_URL = 'https://vayholflhqoyflbvuusa.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheWhvbGZsaHFveWZsYnZ1dXNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNzc5NjcsImV4cCI6MjA3ODY1Mzk2N30.QxD4_XbYlQarPRUcmoQQclw8cCnnzRiHZcYzSsUXGDA' ;
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZayholflhqoyflbvuusaIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNzc5NjcsImV4cCI6MjA3ODY1Mzk2N30.QxD4_XbYlQarPRUcmoQQclw8cCnnzRiHZcYzSsUXGDA' ;
   let supabase;
   try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e) { console.error("Error Supabase", e); }
 
@@ -357,7 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function showMsg(txt) { authMsg.textContent = txt; }
   async function initApp() { authBox.style.display = 'none'; appContent.classList.remove('hidden'); await loadPlayers(); await loadPolls(); }
 
-  // --- JUGADORES Y LISTA ---
+  // --- JUGADORES Y LISTA (Incluye lógica player_code) ---
   async function loadPlayers() { 
     if (!currentUser) return;
     const { data } = await supabase.from('players').select('*').eq('user_id', currentUser.id);
@@ -377,7 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!name || !rating) return alert('Datos incompletos');
     
-    // --- LÓGICA DE GENERACIÓN DE player_code ---
+    // --- LÓGICA DE GENERACIÓN DE player_code (Mantiene tu requisito) ---
     const namePrefix = name.substring(0, 4).toUpperCase();
     const randomNumber = Math.floor(Math.random() * 99) + 1;
     const generatedCode = `${namePrefix}${randomNumber}`;
@@ -388,7 +388,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const { data, error } = await supabase.from('players').insert([newPlayer]).select();
     
     if (error) {
-        // Esto podría ser un error de código duplicado, pero lo gestionamos con un mensaje simple
         console.error('Error insertando en Supabase:', error);
         alert(`Error al guardar el jugador. ${error.message}. Si es un código duplicado, intenta con un nombre diferente.`);
         return;
@@ -461,7 +460,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- GENERACIÓN DE EQUIPOS (Ahora genera 5) ---
+  // --- GENERACIÓN DE EQUIPOS (Genera 5) ---
   function generateTeamOptions() { 
     generateError.style.display = 'none';
     const checks = document.querySelectorAll('.p-select:checked');
@@ -498,7 +497,7 @@ document.addEventListener('DOMContentLoaded', () => {
     displayOptions(top5);
   }
 
-  function createStrictMatch(originalPool) { /* ... lógica sin cambios ... */
+  function createStrictMatch(originalPool) { /* ... lógica de equipo sin cambios ... */
     const gks = shuffle(originalPool.filter(p => p.position === 'portero'));
     const defs = shuffle(originalPool.filter(p => p.position === 'defensa'));
     const fwds = shuffle(originalPool.filter(p => p.position === 'delantero'));
@@ -588,7 +587,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return [...t].sort((a,b)=>order[a.position]-order[b.position]).map(p=>`<li><span>${p.name}</span><span style="font-size:0.7rem;opacity:0.7;">${p.position.substring(0,3).toUpperCase()}</span></li>`).join('');
   }
 
-  // --- GESTIÓN DE VOTACIONES ---
+  // --- GESTIÓN DE VOTACIONES (Panel de control) ---
   async function createPoll() {
     const selectedOptions = Array.from(document.querySelectorAll('.poll-select-check:checked'));
     if (selectedOptions.length !== 3) {
@@ -604,7 +603,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const newPoll = {
         mister_id: currentUser.id,
         status: 'open',
-        poll_name: pollName, // Añadiremos esta columna a Supabase para mejorar el dashboard
+        poll_name: pollName, // Se asume que añadirás 'poll_name' a la tabla 'polls'
         option_1: optionsData[0],
         option_2: optionsData[1],
         option_3: optionsData[2],
@@ -727,7 +726,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => { document.getElementById('fieldSection').scrollIntoView({behavior: "smooth"}); }, 100);
   }
   
-  // --- PIZARRA TÁCTICA Y DRAG & DROP (MODIFICADO PARA GUARDAR) ---
+  // --- PIZARRA TÁCTICA Y DRAG & DROP (MODIFICADO PARA GUARDAR POSICIÓN) ---
 
   function displayField(teamA, teamB, initialPositions = null) {
     document.getElementById('fieldSection').classList.remove('hidden');
