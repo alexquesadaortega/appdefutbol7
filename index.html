@@ -131,7 +131,7 @@
     border-radius: 16px; padding: 20px; margin-bottom: 20px; 
     position: relative;
   }
-  .option-card input[type="checkbox"] { 
+  .option-card input[type="checkbox"] { 
     position: absolute; top: 10px; right: 10px; width: 20px; height: 20px; accent-color: var(--primary);
   }
   .team-columns { display: flex; flex-direction: column; gap: 20px; margin-top: 15px; } 
@@ -195,7 +195,7 @@
     border-radius: 10px; border: 1px solid #334155;
   }
   .poll-info { flex-grow: 1; }
-  .poll-status-tag { 
+  .poll-status-tag { 
     padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;
     color: #fff; text-transform: uppercase; margin-left: 10px;
   }
@@ -376,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const position = posIn.value;
 
     if (!name || !rating) return alert('Datos incompletos');
-    
+    
     // --- LÓGICA DE GENERACIÓN DE player_code (Mantiene tu requisito) ---
     const namePrefix = name.substring(0, 4).toUpperCase();
     const randomNumber = Math.floor(Math.random() * 99) + 1;
@@ -437,7 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div>
              <span style="font-weight:600; font-size:1rem; color:#f1f5f9;">${p.name}</span>
              <span class="tag ${p.position}">${p.position}</span>
-              ${p.player_code ? `<span class="tag" style="background:#555; color:white; font-size:9px;">#${p.player_code}</span>` : ''}
+              ${p.player_code ? `<span class="tag" style="background:#555; color:white; font-size:9px;">#${p.player_code}</span>` : ''}
           </div>
         </div>
         <div style="display:flex; align-items:center; gap: 10px;">
@@ -519,34 +519,34 @@ document.addEventListener('DOMContentLoaded', () => {
         else if(teamB.length < 7) teamB.push(leftovers.pop()); // Si B < 7 y A = 7 (solo si hay más de 14)
         else break; // Si ambos tienen 7 y aún hay left-overs, paramos aquí
     }
-    
+    
     // Filtramos los que no entraron
     const finalA = teamA.filter(p => p);
     const finalB = teamB.filter(p => p);
-    
+    
     if(finalA.length === 0 || finalB.length === 0) return null; // Prevenir equipos vacíos
 
     const getAvg = t => t.reduce((a,c)=>a+c.rating,0) / t.length;
     const avgA = getAvg(finalA); const avgB = getAvg(finalB);
 
-    return { 
-        teamA: finalA, 
-        teamB: finalB, 
-        avgA: avgA.toFixed(2), 
-        avgB: avgB.toFixed(2), 
-        diff: Math.abs(avgA - avgB) 
+    return { 
+        teamA: finalA, 
+        teamB: finalB, 
+        avgA: avgA.toFixed(2), 
+        avgB: avgB.toFixed(2), 
+        diff: Math.abs(avgA - avgB) 
     };
   }
   
   // MOSTRAR OPCIONES (Añadido checkbox y botón de votación)
   function displayOptions(options) {
     teamsResultEl.innerHTML = '';
-    
+    
     options.forEach((opt, index) => {
         const div = document.createElement('div');
         div.className = 'option-card';
         div.dataset.optionIndex = index + 1;
-        
+        
         // Checkbox para seleccionar la opción
         div.innerHTML = `
             <input type="checkbox" class="poll-select-check" data-team-data='${JSON.stringify(opt)}' />
@@ -562,7 +562,7 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         teamsResultEl.appendChild(div);
     });
-    
+    
     // Botón para crear votación
     const createPollBtn = document.createElement('button');
     createPollBtn.className = 'primary';
@@ -619,7 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const pollId = data[0].id;
     const shareLink = `${window.location.origin}/votar.html?id=${pollId}`;
     alert(`✅ ¡Votación Creada! Copia el enlace para compartir con los jugadores:\n\n${shareLink}`);
-    
+    
     // Limpiamos la sección de resultados y recargamos el dashboard
     teamsResultEl.innerHTML = '';
     loadPolls();
@@ -647,7 +647,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const totalVotes = p.votes[0].count;
         const statusTag = p.status === 'open' ? `<span class="poll-status-tag poll-status-open">Abierta (${totalVotes} votos)</span>` : `<span class="poll-status-tag poll-status-closed">CERRADA</span>`;
         const pollName = p.poll_name || `Votación sin nombre (${new Date(p.created_at).toLocaleDateString()})`;
-        
+        
         const div = document.createElement('div');
         div.className = 'poll-card';
         div.innerHTML = `
@@ -662,7 +662,7 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         pollDashboardEl.appendChild(div);
     });
-    
+    
     document.querySelectorAll('.close-poll-btn').forEach(b => b.addEventListener('click', (e) => closePoll(e.currentTarget.dataset.id, e.currentTarget.dataset.votes)));
     document.querySelectorAll('.view-poll-btn').forEach(b => b.addEventListener('click', (e) => viewPollInField(e.currentTarget.dataset.id, e.currentTarget.dataset.name, e.currentTarget.dataset.winningOption)));
 
@@ -678,7 +678,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .rollup();
 
     if (voteError) return alert('Error al contar votos: ' + voteError.message);
-    
+    
     // Determinar el ganador
     let winner = 1;
     let maxVotes = 0;
@@ -695,200 +695,251 @@ document.addEventListener('DOMContentLoaded', () => {
       .update({ status: 'closed', winning_option: winner })
       .eq('id', pollId);
 
-    if (closeError) return alert('Error al cerrar la votación: ' + closeError.message);
-    
-    alert(`✅ Votación Cerrada. La Opción ganadora es la número ${winner} con ${maxVotes} votos.`);
-    loadPolls(); // Recargar el dashboard
+    if (closeError) return alert('Error al cerrar votación: ' + closeError.message);
+
+    alert(`🎉 Votación cerrada con éxito. Opción ganadora: #${winner}.`);
+    loadPolls();
   }
 
   async function viewPollInField(pollId, pollName, winningOption) {
     activePollId = pollId;
     document.getElementById('fieldPollName').textContent = pollName;
-
-    // 1. Obtener la votación
+    
     const { data: poll, error } = await supabase.from('polls').select('*').eq('id', pollId).single();
-    if (error || !poll) return alert('Error al cargar la votación.');
+    if (error) return alert('Error al cargar datos del poll.');
 
-    const winnerKey = `option_${winningOption}`;
-    const winningTeams = poll[winnerKey];
-
-    if (!winningTeams) return alert(`No se encontró la Opción ${winningOption} para esta votación.`);
-
-    // 2. Cargar las posiciones guardadas, si existen
-    let positions = null;
-    if (poll.tactics_board_state && poll.tactics_board_state.length > 0) {
-        positions = poll.tactics_board_state;
+    // Obtener los equipos de la opción ganadora
+    const teamsKey = `option_${winningOption}`;
+    const teams = poll[teamsKey];
+    
+    if (!teams || !teams.teamA || !teams.teamB) {
+        return alert('Datos de equipo no válidos para la opción ganadora.');
     }
+
+    // Mostrar la pizarra con los equipos y el estado guardado
+    displayField(teams.teamA, teams.teamB, poll.tactics_board_state);
     
-    // 3. Mostrar la pizarra
-    displayField(winningTeams.teamA, winningTeams.teamB, positions);
-
-    setTimeout(() => { document.getElementById('fieldSection').scrollIntoView({behavior: "smooth"}); }, 100);
-  }
-  
-  // --- PIZARRA TÁCTICA Y DRAG & DROP (MODIFICADO PARA GUARDAR POSICIÓN) ---
-
-  function displayField(teamA, teamB, initialPositions = null) {
     document.getElementById('fieldSection').classList.remove('hidden');
+    // Desplazar hacia la pizarra
+    document.getElementById('fieldSection').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // --- PIZARRA TÁCTICA Y DRAG-AND-DROP ---
+
+  function displayField(teamA, teamB, positions = null) {
     fullField.querySelectorAll('.player-token').forEach(e => e.remove());
-    
-    drawTeamOnUnifiedField(teamA, 'token-black', 'bottom', initialPositions); 
-    drawTeamOnUnifiedField(teamB, 'token-white', 'top', initialPositions);    
+
+    drawTeamOnUnifiedField(teamA, 'token-black', 'bottom', positions); 
+    drawTeamOnUnifiedField(teamB, 'token-white', 'top', positions);    
+
+    // Habilitar arrastre para todas las fichas nuevas
+    fullField.querySelectorAll('.player-token').forEach(makeDraggable);
   }
 
   function drawTeamOnUnifiedField(team, colorClass, half, initialPositions) {
-    const isBottomHalf = half === 'bottom';
-    // Coordenadas fijas OBLIGATORIAS (Esqueleto 1-3-1)
-    const coordsFixed = {
-        portero:   [{x:140, y: isBottomHalf ? 520 : 40}], 
-        defensa:   [
-            {x:50, y: isBottomHalf ? 450 : 100}, 
-            {x:140, y: isBottomHalf ? 450 : 100}, 
-            {x:230, y: isBottomHalf ? 450 : 100}
-        ], 
-        delantero: [{x:140, y: isBottomHalf ? 350 : 200}] 
-    };
-    const slots = JSON.parse(JSON.stringify(coordsFixed));
-    
-    const fillerPositions = { /* ... (mismo código de relleno) ... */
-        delantero: [ 
-            {x: 80, y: isBottomHalf ? 380 : 220},
-            {x: 200, y: isBottomHalf ? 380 : 220},
-            {x: 140, y: isBottomHalf ? 400 : 200},
-        ],
-        defensa: [ 
-            {x: 50, y: isBottomHalf ? 490 : 60}, 
-            {x: 230, y: isBottomHalf ? 490 : 60}, 
-        ]
-    };
-    const usedFillerSpots = { delantero: 0, defensa: 0 };
-    
-    team.forEach(p => {
-        let pos = {x: 0, y: 0};
-        
-        // 1. Verificar si hay posición guardada (solo si se está editando una votación)
-        const savedPos = initialPositions ? initialPositions.find(ip => ip.id === String(p.id)) : null;
+      const isBottomHalf = half === 'bottom';
+      // Coordenadas fijas OBLIGATORIAS (Esqueleto 1-3-1)
+      const coordsFixed = {
+          portero:   [{x:140, y: isBottomHalf ? 520 : 40}], 
+          defensa:   [
+              {x:50, y: isBottomHalf ? 450 : 100}, 
+              {x:140, y: isBottomHalf ? 450 : 100}, 
+              {x:230, y: isBottomHalf ? 450 : 100}
+          ], 
+          delantero: [{x:140, y: isBottomHalf ? 350 : 200}] 
+      };
+      const slots = JSON.parse(JSON.stringify(coordsFixed));
+      
+      // Coordenadas de relleno para el 7º jugador
+      const fillerPositions = { 
+          delantero: [ 
+              {x: 80, y: isBottomHalf ? 380 : 220},
+              {x: 200, y: isBottomHalf ? 380 : 220},
+              {x: 140, y: isBottomHalf ? 400 : 200},
+          ],
+          defensa: [ 
+              {x: 50, y: isBottomHalf ? 490 : 60}, 
+              {x: 230, y: isBottomHalf ? 490 : 60}, 
+          ]
+      };
+      const usedFillerSpots = { delantero: 0, defensa: 0 };
+      
+      team.forEach(p => {
+          let pos = {x: 0, y: 0};
+          const playerId = String(p.id);
+          
+          // 1. Verificar si hay posición guardada (siempre se usa si existe)
+          const savedPos = initialPositions ? initialPositions.find(ip => String(ip.id) === playerId) : null;
 
-        if (savedPos) {
-            pos = {x: savedPos.x, y: savedPos.y};
-        } else {
-            // 2. Usar lógica de posición inicial si no hay posición guardada
-            if (slots[p.position] && slots[p.position].length > 0) {
-                pos = slots[p.position].shift();
-            } else if (p.position === 'delantero' && usedFillerSpots.delantero < fillerPositions.delantero.length) {
-                pos = fillerPositions.delantero[usedFillerSpots.delantero];
-                usedFillerSpots.delantero++;
-            } else if (p.position === 'defensa' && usedFillerSpots.defensa < fillerPositions.defensa.length) {
-                pos = fillerPositions.defensa[usedFillerSpots.defensa];
-                usedFillerSpots.defensa++;
-            } else {
-                const yCenter = isBottomHalf ? 300 + Math.random() * 50 : 250 + Math.random() * 50;
-                pos = {x: 60 + Math.random() * 200, y: yCenter};
-            }
-        }
-        
-        createToken(p, fullField, colorClass, pos.x, pos.y);
-    });
-  }
-
-  // Función para actualizar la DB (llamada al finalizar un drag)
-  async function updateTacticsBoardState() {
-    if (!activePollId) {
-        console.log("Modificación de pizarra no guardada: No hay votación activa seleccionada.");
-        return;
-    }
-
-    const newPositions = [];
-    fullField.querySelectorAll('.player-token').forEach(token => {
-        newPositions.push({
-            id: token.dataset.playerId,
-            x: parseFloat(token.style.left),
-            y: parseFloat(token.style.top),
-        });
-    });
-    
-    // Guardar en Supabase (esto es lo que los jugadores verán en tiempo real)
-    const { error } = await supabase.from('polls')
-      .update({ tactics_board_state: newPositions })
-      .eq('id', activePollId);
-
-    if (error) console.error("Error al guardar la pizarra:", error);
-    else console.log("Pizarra guardada y actualizada en tiempo real.");
+          if (savedPos) {
+              pos = {x: savedPos.x, y: savedPos.y};
+          } else {
+              // 2. Usar lógica de posición inicial si no hay posición guardada
+              if (slots[p.position] && slots[p.position].length > 0) {
+                  pos = slots[p.position].shift();
+              } else if (p.position === 'delantero' && usedFillerSpots.delantero < fillerPositions.delantero.length) {
+                  pos = fillerPositions.delantero[usedFillerSpots.delantero];
+                  usedFillerSpots.delantero++;
+              } else if (p.position === 'defensa' && usedFillerSpots.defensa < fillerPositions.defensa.length) {
+                  pos = fillerPositions.defensa[usedFillerSpots.defensa];
+                  usedFillerSpots.defensa++;
+              } else {
+                  // Caso de emergencia (más de 7 jugadores)
+                  const yCenter = isBottomHalf ? 300 + Math.random() * 50 : 250 + Math.random() * 50;
+                  pos = {x: 60 + Math.random() * 200, y: yCenter};
+              }
+          }
+          createToken(p, fullField, colorClass, pos.x, pos.y);
+      });
   }
 
   function createToken(p, div, cls, x, y) {
-    const el = document.createElement('div');
-    el.className = `player-token ${cls}`;
-    el.dataset.playerId = p.id; // Clave para guardar la posición
-    el.textContent = p.name.substring(0,2).toUpperCase();
-    el.style.left = x+'px'; el.style.top = y+'px';
-    const l = document.createElement('div'); l.className='player-label'; l.textContent=p.name;
-    el.appendChild(l);
-    
-    el.addEventListener('mousedown', startDrag);
-    el.addEventListener('touchstart', startDrag, {passive: false});
-    div.appendChild(el);
+      const el = document.createElement('div');
+      el.className = `player-token ${cls}`;
+      el.dataset.playerId = p.id;
+      el.dataset.playerName = p.name;
+      el.textContent = p.name.substring(0,2).toUpperCase();
+      el.style.left = `${x}px`; el.style.top = `${y}px`;
+      const l = document.createElement('div'); l.className='player-label'; l.textContent=p.name;
+      el.appendChild(l);
+      div.appendChild(el);
   }
 
-  // Lógica Drag & Drop
-  let activeItem = null; let activeContainer = null;
-  let initialX, initialY, xOffset = 0, yOffset = 0;
+  // --- LÓGICA DRAG-AND-DROP Y GUARDADO ---
+  let currentDragItem = null;
+  let offset = {x: 0, y: 0};
 
-  function startDrag(e) {
-    const evt = e.type === 'touchstart' ? e.touches[0] : e;
-    initialX = evt.clientX - xOffset; initialY = evt.clientY - yOffset;
-    activeItem = e.currentTarget;
-    activeContainer = activeItem.parentElement;
-    
-    const rect = activeItem.getBoundingClientRect();
-    const parentRect = activeContainer.getBoundingClientRect();
-    const offsetX = evt.clientX - rect.left;
-    const offsetY = evt.clientY - rect.top;
-    
-    const moveHandler = (moveEvent) => {
-        moveEvent.preventDefault(); 
-        const mv = moveEvent.type === 'touchmove' ? moveEvent.touches[0] : moveEvent;
-        
-        let newLeft = mv.clientX - parentRect.left - offsetX;
-        let newTop = mv.clientY - parentRect.top - offsetY;
-        
-        newLeft = Math.max(0, Math.min(newLeft, 320 - 42)); 
-        newTop = Math.max(0, Math.min(newTop, 600 - 42));
-        
-        activeItem.style.left = newLeft + 'px'; activeItem.style.top = newTop + 'px';
-    };
-    
-    const upHandler = () => {
-        document.removeEventListener('mousemove', moveHandler); document.removeEventListener('mouseup', upHandler);
-        document.removeEventListener('touchmove', moveHandler); document.removeEventListener('touchend', upHandler);
-        if (activeItem) {
-            // Llama a la función de guardado después de que el drag ha terminado
-            updateTacticsBoardState();
-        }
-        activeItem = null;
-    };
-    document.addEventListener('mousemove', moveHandler); document.addEventListener('mouseup', upHandler);
-    document.addEventListener('touchmove', moveHandler, {passive: false}); document.addEventListener('touchend', upHandler);
+  function makeDraggable(el) {
+      el.addEventListener('pointerdown', onPointerDown);
+      el.addEventListener('touchstart', onPointerDown);
   }
 
+  function onPointerDown(e) {
+      if (!activePollId) return; // Solo se puede arrastrar si hay un poll activo
+
+      const el = e.currentTarget;
+      currentDragItem = el;
+
+      // Calcula el desplazamiento desde el punto de click hasta la esquina superior izquierda
+      const rect = el.getBoundingClientRect();
+      const fieldRect = fullField.getBoundingClientRect();
+      
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+      offset.x = clientX - rect.left;
+      offset.y = clientY - rect.top;
+
+      el.style.transition = 'none'; // Desactivar transición al arrastrar
+
+      document.addEventListener('pointermove', onPointerMove);
+      document.addEventListener('pointerup', onPointerUp);
+      document.addEventListener('touchmove', onPointerMove, { passive: false });
+      document.addEventListener('touchend', onPointerUp);
+  }
+
+  function onPointerMove(e) {
+      if (!currentDragItem) return;
+      e.preventDefault(); // Prevenir scroll en móviles
+
+      const fieldRect = fullField.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+      // Nueva posición relativa al campo
+      let newX = clientX - fieldRect.left - offset.x;
+      let newY = clientY - fieldRect.top - offset.y;
+      
+      // Aplicar límites del campo (320x600px - tamaño de ficha 42px)
+      const tokenSize = 42;
+      newX = Math.max(0, Math.min(newX, fieldRect.width - tokenSize));
+      newY = Math.max(0, Math.min(newY, fieldRect.height - tokenSize));
+
+      currentDragItem.style.left = `${newX}px`;
+      currentDragItem.style.top = `${newY}px`;
+  }
+
+  function onPointerUp() {
+      if (currentDragItem) {
+          currentDragItem.style.transition = 'transform 0.1s'; // Restaurar transición
+          saveFieldPosition();
+          currentDragItem = null;
+      }
+
+      document.removeEventListener('pointermove', onPointerMove);
+      document.removeEventListener('pointerup', onPointerUp);
+      document.removeEventListener('touchmove', onPointerMove);
+      document.removeEventListener('touchend', onPointerUp);
+  }
+
+  async function saveFieldPosition() {
+      if (!activePollId) return;
+
+      const positions = [];
+      fullField.querySelectorAll('.player-token').forEach(token => {
+          positions.push({
+              id: token.dataset.playerId,
+              name: token.dataset.playerName,
+              x: parseFloat(token.style.left),
+              y: parseFloat(token.style.top),
+          });
+      });
+
+      // Guardar el array de posiciones en el campo tactics_board_state
+      const { error } = await supabase.from('polls')
+          .update({ tactics_board_state: positions })
+          .eq('id', activePollId);
+
+      if (error) console.error('Error al guardar posición:', error);
+      // Si hay éxito, Supabase Realtime se encarga de actualizar en votar.html
+  }
+
+  // --- COMPARTIR IMAGEN POR WHATSAPP ---
   async function shareFieldsImage() {
-    const element = document.getElementById('captureArea');
-    const originalText = btnShare.innerHTML;
-    btnShare.innerHTML = "⚡ Generando..."; btnShare.disabled = true;
-    
-    try {
-        const canvas = await html2canvas(element, { backgroundColor: '#e2e8f0', scale: 2, useCORS: true });
-        canvas.toBlob(async (blob) => {
-            const file = new File([blob], 'partido-f7.png', { type: 'image/png' });
-            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                try { await navigator.share({ files: [file], title: 'Alineación', text: 'Aquí están los equipos ⚽' }); } catch (err) {}
-            } else {
-                const link = document.createElement('a'); link.download = 'alineacion.png'; link.href = canvas.toDataURL(); link.click();
-            }
-            btnShare.innerHTML = originalText; btnShare.disabled = false;
-        });
-    } catch (e) { alert("Error al crear imagen"); btnShare.innerHTML = originalText; btnShare.disabled = false; }
+      btnShare.disabled = true;
+      btnShare.innerHTML = '⏳ Generando imagen...';
+
+      const element = document.getElementById('captureArea');
+
+      try {
+          // html2canvas captura el DIV del campo
+          const canvas = await html2canvas(element, { scale: 2, backgroundColor: '#e2e8f0' });
+          const dataUrl = canvas.toDataURL('image/png');
+
+          // Usamos la API nativa de compartir
+          if (navigator.share) {
+              // Convertir Data URL a Blob (necesario para compartir nativamente)
+              const response = await fetch(dataUrl);
+              const blob = await response.blob();
+              const file = new File([blob], 'alineacion.png', { type: 'image/png' });
+
+              await navigator.share({
+                  files: [file],
+                  title: 'Alineación Táctica',
+                  text: `¡Mira la alineación de hoy! ${document.getElementById('fieldPollName').textContent}.`,
+              });
+          } else {
+              // Si la API de Share no existe (navegadores antiguos o desktop)
+              window.open(dataUrl, '_blank');
+              alert('Abre la imagen en una nueva pestaña. Desde ahí, haz clic derecho para guardar/compartir.');
+          }
+
+      } catch (err) {
+          console.error('Error al compartir o generar imagen:', err);
+          alert('Error al generar la imagen. Inténtalo de nuevo.');
+      } finally {
+          btnShare.disabled = false;
+          btnShare.innerHTML = '📲 Enviar Imagen de Alineación';
+      }
   }
+
+  // --- INICIALIZACIÓN ---
+  supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+          currentUser = session.user;
+          initApp();
+      }
+  });
 });
 </script>
 </body>
