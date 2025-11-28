@@ -300,6 +300,11 @@
             <div style="font-size:3rem; margin-bottom:10px;">✅</div>
             <h3>Voto Registrado</h3>
             <p style="color:var(--text-muted);">Esperando a que el Míster cierre la votación y ajuste la táctica...</p>
+            
+            <div id="playerLiveResultsContainer" style="margin-top:25px; padding-top:15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <h4 style="text-align:center; color:var(--accent); margin-bottom:15px; font-family: 'Kanit', sans-serif;">📊 Resultados en Vivo</h4>
+                <div id="playerLiveResults"></div>
+            </div>
         </div>
     </div>
 </div>
@@ -330,7 +335,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   // --- CONFIGURACIÓN SUPABASE ---
   const SUPABASE_URL = 'https://vayholflhqoyflbvuusa.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheWhvbGZsaHFveWZsYnZ1dXNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNzc5NjcsImV4cCI6MjA3ODY1Mzk2N30.QxD4_XbYlQarPRUcmoQQclw8cCnnzRiHZcYzSsUXGDA' ;
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZayWhvbGZsaHFveWZsYnZ1dXNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNzc5NjcsImV4cCI6MjA3ODY1Mzk2N30.QxD4_XbYlQarPRUcmoQQclw8cCnnzRiHZcYzSsUXGDA' ;
   let supabase;
   try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e) { console.error("Error Supabase", e); }
 
@@ -373,10 +378,9 @@ document.addEventListener('DOMContentLoaded', () => {
           selectedOptionsForPoll = state.selected || [];
           
           if (currentPollId) {
-              // Si hay encuesta activa, vamos directo a los resultados live
               document.getElementById('authBox').style.display = 'none';
               document.getElementById('appContent').classList.remove('hidden');
-              displayMisterOptions(generatedOptions); // Necesario para re-renderizar la UI
+              displayMisterOptions(generatedOptions); 
               document.getElementById('prePublishStep').classList.add('hidden');
               document.getElementById('activePollInfo').classList.remove('hidden');
               const shareUrl = `${window.location.origin}${window.location.pathname}?poll=${currentPollId}`;
@@ -384,7 +388,6 @@ document.addEventListener('DOMContentLoaded', () => {
               setupMisterLiveResults();
               return true;
           } else if (generatedOptions.length > 0) {
-              // Si hay opciones generadas pero no publicada, mostrar las opciones
               document.getElementById('authBox').style.display = 'none';
               document.getElementById('appContent').classList.remove('hidden');
               displayMisterOptions(generatedOptions);
@@ -402,7 +405,6 @@ document.addEventListener('DOMContentLoaded', () => {
       generatedOptions = [];
       selectedOptionsForPoll = [];
   }
-
 
   // --- ENRUTAMIENTO SIMPLE ---
   const urlParams = new URLSearchParams(window.location.search);
@@ -447,7 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
               document.getElementById('authBox').style.display = 'none';
               document.getElementById('appContent').classList.remove('hidden');
               loadPlayers().then(() => {
-                  loadMisterState(); // Cargar estado DESPUÉS de cargar jugadores
+                  loadMisterState();
               });
           }
       });
@@ -472,7 +474,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('authBox').style.display = 'none';
             document.getElementById('appContent').classList.remove('hidden');
             loadPlayers().then(() => {
-                loadMisterState(); // Cargar estado DESPUÉS de cargar jugadores
+                loadMisterState();
             });
         }, 500);
     }
@@ -622,7 +624,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function displayMisterOptions(options) {
     const container = document.getElementById('teamsResult');
     container.innerHTML = '';
-    // selectedOptionsForPoll = []; // No resetear si viene de loadState
     updatePublishButton();
     
     document.getElementById('misterPollControls').classList.remove('hidden');
@@ -663,14 +664,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectedOptionsForPoll = selectedOptionsForPoll.filter(o => o !== option);
             }
             updatePublishButton();
-            saveMisterState(); // Guardar selección
+            saveMisterState(); 
         });
 
         // Evento Previsualizar
         div.querySelector('.btn-preview').addEventListener('click', () => {
             fieldSection.classList.remove('hidden');
             document.getElementById('misterFieldControls').classList.remove('hidden');
-            renderField(generatedOptions[index], true); // TRUE = Editable por Mister
+            renderField(generatedOptions[index], true); 
             fieldSection.scrollIntoView({behavior:"smooth"});
         });
 
@@ -705,10 +706,8 @@ document.addEventListener('DOMContentLoaded', () => {
       
       currentPollId = data[0].id;
       
-      // FIX 1: Persistencia
       saveMisterState();
       
-      // Cambiar UI
       document.getElementById('prePublishStep').classList.add('hidden');
       document.getElementById('activePollInfo').classList.remove('hidden');
       
@@ -724,21 +723,23 @@ document.addEventListener('DOMContentLoaded', () => {
       const render = async () => {
           const { data: votes } = await supabase.from('votes').select('choice_index').eq('poll_id', currentPollId);
           container.innerHTML = '';
-          selectedOptionsForPoll.forEach((_, idx) => {
+          selectedOptionsForPoll.forEach((opt, idx) => {
               const count = votes.filter(v => v.choice_index === idx).length;
               const pct = votes.length ? Math.round((count/votes.length)*100) : 0;
+              const avgDiff = Math.abs(opt.avgA - opt.avgB).toFixed(2);
+              
               container.innerHTML += `
                 <div style="font-size:0.85rem; margin-top:10px; display:flex; justify-content:space-between;">
-                    <span>Opción ${idx+1}</span> <span>${count} votos (${pct}%)</span>
+                    <span>Opción ${idx+1} (Dif: ${avgDiff})</span> <span>${count} votos (${pct}%)</span>
                 </div>
                 <div class="vote-progress-container"><div class="vote-progress-bar" style="width:${pct}%"></div></div>
               `;
           });
       };
 
-      // Realtime Listener
-      supabase.channel('votes_channel').on('postgres_changes', { event: '*', schema: 'public', table: 'votes', filter: `poll_id=eq.${currentPollId}` }, render).subscribe();
-      render(); // Initial call
+      // Listener en tiempo real
+      supabase.channel('mister_votes_channel').on('postgres_changes', { event: '*', schema: 'public', table: 'votes', filter: `poll_id=eq.${currentPollId}` }, render).subscribe();
+      render(); // Llamada inicial
   }
 
   async function closePollAndGoToField() {
@@ -748,22 +749,19 @@ document.addEventListener('DOMContentLoaded', () => {
       let counts = [0,0,0];
       votes.forEach(v => counts[v.choice_index]++);
       
-      // Ganador por mayoría simple
       let maxVotes = Math.max(...counts);
       let winnerIdx = counts.indexOf(maxVotes);
       const winnerOption = selectedOptionsForPoll[winnerIdx];
       
-      // Actualizar DB
       await supabase.from('polls').update({ status: 'closed' }).eq('id', currentPollId);
-      clearMisterState(); // Limpiar estado local
+      clearMisterState(); 
 
-      // Mostrar Pizarra al Mister
       misterView.classList.add('hidden');
       fieldSection.classList.remove('hidden');
       document.getElementById('misterFieldControls').classList.remove('hidden'); 
       document.getElementById('tacticsBadge').textContent = "EDITANDO";
 
-      renderField(winnerOption, true); // MISTER MUEVE FICHAS
+      renderField(winnerOption, true); 
       alert(`Ganó la Opción ${winnerIdx+1} con ${maxVotes} votos.`);
   }
 
@@ -771,9 +769,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // ===================== LÓGICA JUGADOR ====================
   // =========================================================
   
-  // FIX 2: Función auxiliar para mostrar la lista completa en el lado del jugador
   function renderPlayerListForPlayerView(team, color) {
-      const names = team.map(p => p.name.split(' ')[0]).join(', '); // Solo el primer nombre
+      const names = team.map(p => p.name.split(' ')[0]).join(', '); 
       return `<p style="font-size:0.8rem; margin:5px 0 10px 0; color:${color}; line-height:1.4;">
           ${names}
       </p>`;
@@ -816,12 +813,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const { data: vote } = await supabase.from('votes').select('*').eq('poll_id', currentPollId).eq('player_code', playerInfo.player_code).maybeSingle();
 
       if (vote) {
-          showWaitingScreen();
+          showWaitingScreen(poll.options); // Pasa opciones para resultados LIVE
       } else {
           renderPlayerOptions(poll.options);
       }
       
-      supabase.channel('poll_status').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'polls', filter: `id=eq.${currentPollId}` }, 
+      // Listener para cuando el mister cierre
+      supabase.channel('poll_status_player').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'polls', filter: `id=eq.${currentPollId}` }, 
           payload => {
              if (payload.new.status === 'closed' && payload.new.final_tactics) {
                  showFinalField(payload.new.final_tactics);
@@ -862,7 +860,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   player_code: playerInfo.player_code,
                   choice_index: selectedIdx
               }]);
-              if (!error) showWaitingScreen();
+              if (!error) showWaitingScreen(options); // Pasa opciones después de votar
               else alert("Error al votar. ¿Ya has votado?");
           };
 
@@ -870,10 +868,42 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
 
-  function showWaitingScreen() {
+  function showWaitingScreen(options) {
       playerVoteView.classList.remove('hidden');
       document.getElementById('playerVoteOptions').classList.add('hidden');
-      document.getElementById('waitingForMister').classList.remove('hidden');
+      
+      const waitingDiv = document.getElementById('waitingForMister');
+      waitingDiv.classList.remove('hidden');
+      
+      // Inicia el monitoreo de resultados en vivo
+      setupPlayerLiveResults(options); 
+  }
+
+  function setupPlayerLiveResults(options) {
+      const container = document.getElementById('playerLiveResults');
+      
+      const render = async () => {
+          const { data: votes } = await supabase.from('votes').select('choice_index').eq('poll_id', currentPollId);
+          container.innerHTML = '';
+          
+          options.forEach((opt, idx) => {
+              const count = votes.filter(v => v.choice_index === idx).length;
+              const pct = votes.length ? Math.round((count/votes.length)*100) : 0;
+              const avgDiff = Math.abs(opt.avgA - opt.avgB).toFixed(2);
+
+              container.innerHTML += `
+                <div style="font-size:0.85rem; margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight:bold;">Opción ${idx+1} (Dif: ${avgDiff})</span> 
+                    <span>${count} votos (${pct}%)</span>
+                </div>
+                <div class="vote-progress-container"><div class="vote-progress-bar" style="width:${pct}%"></div></div>
+              `;
+          });
+      };
+
+      // Listener en tiempo real para el jugador
+      supabase.channel(`player_poll_${currentPollId}`).on('postgres_changes', { event: '*', schema: 'public', table: 'votes', filter: `poll_id=eq.${currentPollId}` }, render).subscribe();
+      render(); // Llamada inicial
   }
 
   function showFinalField(tactics) {
