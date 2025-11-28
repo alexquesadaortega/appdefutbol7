@@ -4,942 +4,965 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <meta name="theme-color" content="#0f172a">
-<title>Fútbol 7 Pro - Ultimate Edition | Míster</title>
+<title>Fútbol 7 Pro - Ultimate Edition</title>
 
 <link rel="icon" href="icono.png" sizes="32x32">
 <link rel="apple-touch-icon" href="icono.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" sizes="180x180" href="icono.png">
-<link rel="icon" sizes="192x192" href="icono.png">
-<link rel="manifest" href="/manifest.json">
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
-<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
-/* --- ESTILOS GENERALES (AQUÍ ESTÁ TODA LA ESTÉTICA ORIGINAL) --- */
-  :root { 
-    --bg-dark: #0f172a;
-    --bg-card: rgba(30, 41, 59, 0.7);
-    --primary: #06b6d4;      /* Cian */
-    --accent: #a3e635;       /* Lima */
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --whatsapp: #25D366;
-    --glass-border: 1px solid rgba(255, 255, 255, 0.1);
-  }
+  :root { 
+    --bg-dark: #0f172a;
+    --bg-card: rgba(30, 41, 59, 0.7);
+    --primary: #06b6d4;      /* Cian */
+    --accent: #a3e635;       /* Lima */
+    --danger: #ef4444;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --whatsapp: #25D366;
+    --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+  }
 
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-  body { 
-    font-family: 'Inter', sans-serif;
-    background-color: var(--bg-dark);
-    background-image: radial-gradient(circle at top right, #1e293b 0%, #0f172a 100%);
-    color: var(--text-main);
-    margin: 0; 
-    padding: 20px 15px 120px 15px;
-    min-height: 10vh;
-  }
-  
-  h1, h2, h3 { font-family: 'Kanit', sans-serif; margin-top: 0; letter-spacing: 0.5px; }
-  
-  h1 { 
-    font-weight: 800; font-size: 2rem; text-align: center; margin-bottom: 25px; 
-    text-transform: uppercase;
-    background: linear-gradient(to right, #22d3ee, #a3e635);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-  }
+  body { 
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-dark);
+    background-image: radial-gradient(circle at top right, #1e293b 0%, #0f172a 100%);
+    color: var(--text-main);
+    margin: 0; 
+    padding: 20px 15px 120px 15px;
+    min-height: 100vh;
+  }
+  
+  h1, h2, h3, h4 { font-family: 'Kanit', sans-serif; margin-top: 0; letter-spacing: 0.5px; }
+  
+  h1 { 
+    font-weight: 800; font-size: 2rem; text-align: center; margin-bottom: 25px; 
+    text-transform: uppercase;
+    background: linear-gradient(to right, #22d3ee, #a3e635);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    cursor: pointer;
+  }
 
-  h2 { font-size: 1.4rem; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
-  
-  /* ESTILO CRISTAL (Glassmorphism) */
-  .box { 
-    background: var(--bg-card);
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    border: var(--glass-border);
-    padding: 20px; border-radius: 20px; margin-bottom: 24px; 
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-    animation: fadeIn 0.5s ease-out forwards;
-  }
-  
-  /* INPUTS */
-  input, select { 
-    padding: 14px; margin-bottom: 12px; border-radius: 12px; 
-    border: 1px solid #334155; width: 100%; font-size: 16px; 
-    background: #1e293b; color: #fff; transition: all 0.3s ease;
-    font-family: 'Inter', sans-serif;
-  }
-  input:focus, select:focus { 
-    border-color: var(--primary); box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2); 
-    outline: none; background: #0f172a;
-  }
+  h2 { font-size: 1.4rem; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+  
+  /* ESTILO CRISTAL */
+  .box { 
+    background: var(--bg-card);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: var(--glass-border);
+    padding: 20px; border-radius: 20px; margin-bottom: 24px; 
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+  
+  /* INPUTS */
+  input, select { 
+    padding: 14px; margin-bottom: 12px; border-radius: 12px; 
+    border: 1px solid #334155; width: 100%; font-size: 16px; 
+    background: #1e293b; color: #fff; transition: all 0.3s ease;
+    font-family: 'Inter', sans-serif;
+  }
+  input:focus, select:focus { 
+    border-color: var(--primary); box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2); 
+    outline: none; background: #0f172a;
+  }
 
-  .row-inputs { display: flex; gap: 10px; }
-  
-  /* BOTONES */
-  button { 
-    padding: 16px; border-radius: 12px; border: none; cursor: pointer; 
-    font-family: 'Kanit', sans-serif; font-weight: 600; font-size: 1rem; 
-    text-transform: uppercase; letter-spacing: 1px; width: 100%; margin-top: 10px; 
-    transition: transform 0.1s;
-  }
-  button:active { transform: scale(0.97); }
-  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .row-inputs { display: flex; gap: 10px; }
+  
+  /* BOTONES */
+  button { 
+    padding: 16px; border-radius: 12px; border: none; cursor: pointer; 
+    font-family: 'Kanit', sans-serif; font-weight: 600; font-size: 1rem; 
+    text-transform: uppercase; letter-spacing: 1px; width: 100%; margin-top: 10px; 
+    transition: transform 0.1s;
+  }
+  button:active { transform: scale(0.97); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; filter: grayscale(1); }
 
-  button.primary { 
-    background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%); 
-    color: #fff; box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
-  }
-  button.secondary { background: #334155; color: var(--accent); border: 1px solid rgba(163, 230, 53, 0.2); }
-  button.whatsapp { 
-    background: var(--whatsapp); color: #fff; display: flex; align-items: center; justify-content: center; gap: 10px; 
-    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
-  }
-  button.outline { 
-    background: transparent; border: 1px solid var(--primary); color: var(--primary); 
-    font-size: 0.8rem; padding: 6px 12px; width: auto; margin: 0;
-  }
-  button.poll-action { background: #a3e635; color: #1e293b; font-size: 0.85rem; padding: 10px; width: auto; margin: 0; flex: 1; }
+  button.primary { 
+    background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%); 
+    color: #fff; box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
+  }
+  button.secondary { background: #334155; color: var(--accent); border: 1px solid rgba(163, 230, 53, 0.2); }
+  button.whatsapp { 
+    background: var(--whatsapp); color: #fff; display: flex; align-items: center; justify-content: center; gap: 10px; 
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+  }
+  button.outline { 
+    background: transparent; border: 1px solid var(--primary); color: var(--primary); 
+    font-size: 0.8rem; padding: 6px 12px; width: auto; margin: 0;
+  }
+  button.vote-btn {
+    background: linear-gradient(135deg, #a3e635 0%, #4ade80 100%);
+    color: #064e3b; box-shadow: 0 4px 15px rgba(163, 230, 53, 0.4);
+  }
 
-  /* LISTAS */
-  .player-row { 
-    display: flex; justify-content: space-between; align-items: center; 
-    padding: 12px; margin-bottom: 8px; background: rgba(255,255,255,0.03); 
-    border-radius: 10px; border: 1px solid transparent;
-  }
-  .p-select { width: 22px; height: 22px; margin-right: 12px; accent-color: var(--accent); }
-  
-  .tag { padding: 4px 8px; border-radius: 4px; font-size: 10px; text-transform: uppercase; font-weight: 800; margin-left: 5px; }
-  .tag.portero { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
-  .tag.defensa { background: rgba(16, 185, 129, 0.2); color: #34d399; }
-  .tag.delantero { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+  /* CHECKBOX PERSONALIZADO PARA SELECCIÓN */
+  .opt-checkbox {
+    width: 25px; height: 25px; accent-color: var(--primary); margin: 0; cursor: pointer;
+  }
 
-  .rating-badge {
-    background: #0f172a; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
-    border-radius: 50%; font-weight: bold; color: var(--accent); border: 2px solid #334155; font-size: 0.9rem;
-  }
+  /* LISTAS */
+  .player-row { 
+    display: flex; justify-content: space-between; align-items: center; 
+    padding: 12px; margin-bottom: 8px; background: rgba(255,255,255,0.03); 
+    border-radius: 10px; border: 1px solid transparent;
+  }
+  .p-select { width: 22px; height: 22px; margin-right: 12px; accent-color: var(--accent); }
+  
+  .tag { padding: 4px 8px; border-radius: 4px; font-size: 10px; text-transform: uppercase; font-weight: 800; margin-left: 5px; }
+  .tag.portero { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+  .tag.defensa { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+  .tag.delantero { background: rgba(239, 68, 68, 0.2); color: #f87171; }
 
-  /* RESULTADOS */
-  .option-card { 
-    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 16px; padding: 20px; margin-bottom: 20px; 
-    position: relative;
-  }
-  .option-card input[type="checkbox"] { 
-    position: absolute; top: 10px; right: 10px; width: 20px; height: 20px; accent-color: var(--primary);
-  }
-  .team-columns { display: flex; flex-direction: column; gap: 20px; margin-top: 15px; } 
-  @media (min-width: 768px) { .team-columns { flex-direction: row; } }
+  .rating-badge {
+    background: #0f172a; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; font-weight: bold; color: var(--accent); border: 2px solid #334155; font-size: 0.9rem;
+  }
 
-  .team-col ul { padding: 0; list-style: none; }
-  .team-col li { 
-    padding: 8px 0; border-bottom: 1px dashed #334155; display:flex; justify-content:space-between; 
-    font-size: 0.9rem; color: #cbd5e1;
-  }
+  /* RESULTADOS */
+  .option-card { 
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 16px; padding: 20px; margin-bottom: 20px; 
+    transition: all 0.3s;
+  }
+  .option-card.selected { border: 2px solid var(--primary); background: rgba(6, 182, 212, 0.05); }
 
-  /* CAMPO DE FÚTBOL GRANDE (UNIFICADO) */
-  .field-container { 
-    display: flex; flex-direction: column; align-items: center; gap: 25px; 
-    background: #e2e8f0; padding: 20px; border-radius: 12px; margin-top: 10px;
-  }
-  
-  .full-field {
-    position: relative; width: 320px; height: 600px; 
-    background-color: #369a43;
-    /* Patrón de césped */
-    background-image: 
-      linear-gradient(0deg, transparent 24%, rgba(255,255,255,.1) 25%, rgba(255,255,255,.1) 26%, transparent 27%, transparent 74%, rgba(255,255,255,.1) 75%, rgba(255,255,255,.1) 76%, transparent 77%, transparent),
-      repeating-linear-gradient(0deg, rgba(0,0,0,0.05) 0px, rgba(0,0,0,0.05) 50px, transparent 50px, transparent 100px);
-    border: 6px solid #fff; border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3); overflow: hidden; user-select: none;
-  }
+  .team-columns { display: flex; flex-direction: column; gap: 20px; margin-top: 15px; } 
+  @media (min-width: 768px) { .team-columns { flex-direction: row; } }
 
-  /* LÍNEAS DEL CAMPO GRANDE */
-  .field-line-center { position: absolute; top: 50%; left: 0; width: 100%; height: 3px; background: rgba(255,255,255,0.8); }
-  .field-circle { position: absolute; top: 50%; left: 50%; width: 70px; height: 70px; border: 3px solid rgba(255,255,255,0.8); border-radius: 50%; transform: translate(-50%, -50%); }
-  
-  /* Áreas de 7v7 */
-  .area-A { position: absolute; bottom: 0; left: 50%; width: 140px; height: 60px; border: 3px solid rgba(255,255,255,0.8); border-bottom: none; transform: translateX(-50%); background: rgba(255,255,255,0.1); }
-  .area-B { position: absolute; top: 0; left: 50%; width: 140px; height: 60px; border: 3px solid rgba(255,255,255,0.8); border-top: none; transform: translateX(-50%); background: rgba(255,255,255,0.1); }
+  .team-col ul { padding: 0; list-style: none; }
+  .team-col li { 
+    padding: 8px 0; border-bottom: 1px dashed #334155; display:flex; justify-content:space-between; 
+    font-size: 0.9rem; color: #cbd5e1;
+  }
 
+  /* BARRAS DE VOTACIÓN */
+  .vote-progress-container {
+    height: 10px; background: #334155; border-radius: 5px; margin-top: 10px; overflow: hidden;
+  }
+  .vote-progress-bar {
+    height: 100%; background: var(--accent); width: 0%; transition: width 0.5s ease-out;
+  }
+  .vote-count { font-size: 0.8rem; color: var(--text-muted); text-align: right; margin-top: 5px; }
 
-  /* FICHAS JUGADORES */
-  .player-token {
-    position: absolute; width: 42px; height: 42px; border-radius: 50%; 
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Kanit', sans-serif; font-size: 13px; font-weight: 800; 
-    cursor: grab; z-index: 10; touch-action: none; 
-    box-shadow: 0 4px 6px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.3);
-    transition: transform 0.1s;
-  }
-  .player-token:active { cursor: grabbing; transform: scale(1.2); z-index: 100; }
-  
-  .token-black { background: radial-gradient(circle at 30% 30%, #374151, #111827); color: #fff; border: 2px solid #fff; }
-  .token-white { background: radial-gradient(circle at 30% 30%, #fff, #e5e7eb); color: #111827; border: 2px solid #111827; }
+  /* CAMPO DE FÚTBOL GRANDE */
+  .field-container { 
+    display: flex; flex-direction: column; align-items: center; gap: 25px; 
+    background: #e2e8f0; padding: 20px; border-radius: 12px; margin-top: 10px;
+  }
+  
+  .full-field {
+    position: relative; width: 320px; height: 600px; 
+    background-color: #369a43;
+    background-image: 
+      linear-gradient(0deg, transparent 24%, rgba(255,255,255,.1) 25%, rgba(255,255,255,.1) 26%, transparent 27%, transparent 74%, rgba(255,255,255,.1) 75%, rgba(255,255,255,.1) 76%, transparent 77%, transparent),
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.05) 0px, rgba(0,0,0,0.05) 50px, transparent 50px, transparent 100px);
+    border: 6px solid #fff; border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3); overflow: hidden; user-select: none;
+  }
 
-  .player-label {
-    position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%);
-    background: rgba(0,0,0,0.85); color: #fff; padding: 2px 8px; border-radius: 8px;
-    font-size: 10px; white-space: nowrap; font-weight: 600; pointer-events: none;
-  }
-  /* ESTILO ADICIONAL PARA EL PANEL DE VOTACIONES */
-  .poll-card {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 15px; margin-bottom: 10px; background: rgba(255,255,255,0.05);
-    border-radius: 10px; border: 1px solid #334155;
-  }
-  .poll-info { flex-grow: 1; }
-  .poll-status-tag { 
-    padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;
-    color: #fff; text-transform: uppercase; margin-left: 10px;
-  }
-  .poll-status-open { background: var(--primary); }
-  .poll-status-closed { background: #ef4444; }
-  .poll-actions { display: flex; gap: 8px; margin-left: 15px; }
+  .field-line-center { position: absolute; top: 50%; left: 0; width: 100%; height: 3px; background: rgba(255,255,255,0.8); }
+  .field-circle { position: absolute; top: 50%; left: 50%; width: 70px; height: 70px; border: 3px solid rgba(255,255,255,0.8); border-radius: 50%; transform: translate(-50%, -50%); }
+  
+  .area-A { position: absolute; bottom: 0; left: 50%; width: 140px; height: 60px; border: 3px solid rgba(255,255,255,0.8); border-bottom: none; transform: translateX(-50%); background: rgba(255,255,255,0.1); }
+  .area-B { position: absolute; top: 0; left: 50%; width: 140px; height: 60px; border: 3px solid rgba(255,255,255,0.8); border-top: none; transform: translateX(-50%); background: rgba(255,255,255,0.1); }
 
-  .hidden { display: none !important; }
-  .error-msg { background: rgba(239,68,68,0.2); color: #fca5a5; padding: 12px; border-radius: 8px; border: 1px solid rgba(239,68,68,0.4); margin-top: 10px; display: none; text-align: center; }
-  .sticky-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-  .btn-group { display: flex; gap: 8px; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  /* FICHAS JUGADORES */
+  .player-token {
+    position: absolute; width: 42px; height: 42px; border-radius: 50%; 
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Kanit', sans-serif; font-size: 13px; font-weight: 800; 
+    cursor: grab; z-index: 10; touch-action: none; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.3);
+    transition: transform 0.1s;
+  }
+  .player-token:active { cursor: grabbing; transform: scale(1.2); z-index: 100; }
+  
+  .token-black { background: radial-gradient(circle at 30% 30%, #374151, #111827); color: #fff; border: 2px solid #fff; }
+  .token-white { background: radial-gradient(circle at 30% 30%, #fff, #e5e7eb); color: #111827; border: 2px solid #111827; }
+
+  .player-label {
+    position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.85); color: #fff; padding: 2px 8px; border-radius: 8px;
+    font-size: 10px; white-space: nowrap; font-weight: 600; pointer-events: none;
+  }
+
+  /* MODAL LINK */
+  .share-link-box {
+    background: #1e293b; padding: 15px; border-radius: 10px; border: 1px dashed var(--primary);
+    word-break: break-all; font-family: monospace; font-size: 0.9rem; color: var(--primary); margin-top: 10px;
+    user-select: all; text-align: center;
+  }
+
+  .hidden { display: none !important; }
+  .error-msg { background: rgba(239,68,68,0.2); color: #fca5a5; padding: 12px; border-radius: 8px; border: 1px solid rgba(239,68,68,0.4); margin-top: 10px; display: none; text-align: center; }
+  .sticky-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+  .btn-group { display: flex; gap: 8px; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 </head>
 <body>
 
-<h1>Fútbol 7 <span style="color:#fff; -webkit-text-fill-color: initial;">Pro</span></h1>
+<h1 id="appTitle">Fútbol 7 <span style="color:#fff; -webkit-text-fill-color: initial;">Pro</span></h1>
 
-<div class="box" id="authBox" style="text-align: center;">
-  <h2>Bienvenido Míster</h2>
-  <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:20px;">Gestiona tu equipo como un profesional.</p>
-  
-  <input id="authEmail" type="email" placeholder="Correo electrónico">
-  <input id="authPassword" type="password" placeholder="Contraseña">
-  
-  <button id="btnLogin" class="primary">Iniciar Sesión</button>
-  <button id="btnRegister" class="secondary" style="margin-top:15px; background:transparent;">Registrarse</button>
-  <div id="authMsg" style="margin-top:15px; font-size:0.8rem; min-height:20px;"></div>
+<div id="misterView">
+    <div class="box" id="authBox" style="text-align: center;">
+      <h2>Bienvenido Míster</h2>
+      <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:20px;">Gestiona tu equipo como un profesional.</p>
+      <input id="authEmail" type="email" placeholder="Correo electrónico">
+      <input id="authPassword" type="password" placeholder="Contraseña">
+      <button id="btnLogin" class="primary">Iniciar Sesión</button>
+      <button id="btnRegister" class="secondary" style="margin-top:15px; background:transparent;">Registrarse</button>
+      <div id="authMsg" style="margin-top:15px; font-size:0.8rem; min-height:20px;"></div>
+    </div>
+
+    <div id="appContent" class="hidden">
+      
+      <div class="box">
+        <h2>👤 Nuevo Fichaje</h2>
+        <div class="row-inputs">
+          <input id="playerName" placeholder="Nombre (ej. Lamine)" style="flex: 2;">
+          <input id="playerSkill" type="number" placeholder="Nota" inputmode="decimal" step="0.1" style="flex: 1; text-align:center;">
+        </div>
+        <select id="playerPosition">
+            <option value="portero">🧤 Portero</option>
+            <option value="defensa">🛡️ Defensa</option>
+            <option value="delantero">⚡ Delantero</option>
+        </select>
+        <button id="btnAddPlayer" class="secondary">➕ Añadir a plantilla</button>
+      </div>
+
+      <div class="box">
+        <div class="sticky-header">
+            <h3 style="margin:0; color:var(--primary);">Convocatoria <span id="playerCount" style="color:var(--text-muted); font-size:0.9rem;"></span></h3>
+            <div class="btn-group">
+                <button id="btnSelectAll" class="outline" style="border-color:var(--accent); color:var(--accent);">Marcar Todos</button>
+                <button id="btnDeselectAll" class="outline" style="border-color:#f1f5f9; color:#f1f5f9;">Desmarcar Todos</button> 
+            </div>
+        </div>
+        <div id="playersList"></div>
+      </div>
+
+      <div class="box" style="border: 1px solid var(--primary);">
+        <h2 style="color: var(--primary);">⚡ Generar Opciones</h2>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:15px;">
+            Selecciona 14 jugadores. Generaré 5 combinaciones. Elige 3 para la votación.
+        </p>
+        
+        <button id="btnGenerateTeams" class="primary" style="font-size: 1.1rem; box-shadow: 0 0 20px rgba(6,182,212,0.3);">🎲 Calcular Equipos</button>
+        <div id="generateError" class="error-msg"></div>
+
+        <div id="teamsResult" style="margin-top:20px;"></div>
+        
+        <div id="misterPollControls" class="hidden" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+             <h3 style="text-align:center;">🗳️ Zona de Votación</h3>
+             <p style="text-align:center; font-size:0.8rem; color:#94a3b8;">Selecciona 3 opciones arriba para habilitar la publicación.</p>
+             <button id="btnPublishPoll" disabled class="primary" style="background: var(--accent); color: #064e3b;">🚀 PUBLICAR VOTACIÓN</button>
+             
+             <div id="activePollInfo" class="hidden">
+                 <div class="share-link-box" id="pollLinkDisplay">Generando enlace...</div>
+                 <p style="text-align:center; font-size:0.8rem; color:#fff; margin-top:5px;">Comparte este enlace con tus jugadores. Ellos usarán su "Player Code".</p>
+                 <div id="liveResults"></div>
+                 <button id="btnClosePoll" class="primary" style="margin-top: 15px; background: #ef4444; box-shadow: 0 4px 15px rgba(239,68,68,0.4);">🛑 Cerrar Votación y Confirmar</button>
+             </div>
+        </div>
+      </div>
+    </div>
 </div>
 
-<div id="appContent" class="hidden">
-  
-    <div class="box">
-    <h2>📊 Panel de Votaciones</h2>
-    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:15px;">Gestiona los partidos activos y cerrados.</p>
-    <div id="pollDashboard">
-      <p style="color:var(--text-muted); font-size:0.8rem;">Cargando votaciones...</p>
-    </div>
-    <button id="btnRefreshPolls" class="secondary" style="margin-top:10px; padding:10px;">🔄 Recargar Votaciones</button>
-  </div>
-    <div class="box">
-    <h2>👤 Nuevo Fichaje</h2>
-    <div class="row-inputs">
-      <input id="playerName" placeholder="Nombre (ej. Lamine)" style="flex: 2;">
-      <input id="playerSkill" type="number" placeholder="Nota" inputmode="decimal" step="0.1" style="flex: 1; text-align:center;">
-    </div>
-    <select id="playerPosition">
-        <option value="portero">🧤 Portero</option>
-        <option value="defensa">🛡️ Defensa</option>
-        <option value="delantero">⚡ Delantero</option>
-    </select>
-    <button id="btnAddPlayer" class="secondary">➕ Añadir a plantilla</button>
-  </div>
+<div id="playerAuthView" class="hidden">
+    <div class="box" style="text-align:center;">
+        <h2>🔐 Acceso Jugador</h2>
+        <p style="color:var(--text-muted);">Introduce tu código personal para votar.</p>
+        <input id="playerCodeInput" placeholder="Tu Código (ej. PL-123)" style="text-align:center; letter-spacing: 2px; font-weight:bold;">
+        <button id="btnPlayerLogin" class="primary">Entrar a Votar</button>
+        <p id="playerLoginMsg" style="color:#ef4444; font-size:0.8rem; margin-top:10px;"></p>
+    </div>
+</div>
 
-  <div class="box">
-    <div class="sticky-header">
-        <h3 style="margin:0; color:var(--primary);">Convocatoria <span id="playerCount" style="color:var(--text-muted); font-size:0.9rem;"></span></h3>
-        <div class="btn-group">
-            <button id="btnSelectAll" class="outline" style="border-color:var(--accent); color:var(--accent);">Marcar Todos</button>
-            <button id="btnDeselectAll" class="outline" style="border-color:#f1f5f9; color:#f1f5f9;">Desmarcar Todos</button> 
-        </div>
-    </div>
-    <div id="playersList"></div>
-  </div>
+<div id="playerVoteView" class="hidden">
+    <div class="box">
+        <h2 style="text-align:center; color: var(--accent);">🗳️ Tu Voto Cuenta</h2>
+        <p style="text-align:center; font-size:0.9rem; color:#cbd5e1;">Elige la mejor alineación.</p>
+        <div id="playerVoteOptions"></div>
+        <div id="waitingForMister" class="hidden" style="text-align:center; padding: 20px;">
+            <h3>✅ Voto Registrado</h3>
+            <p>Esperando a que el Míster finalice la táctica...</p>
+            <div style="font-size:2rem;">⏳</div>
+        </div>
+    </div>
+</div>
 
-  <div class="box" style="border: 1px solid var(--primary);">
-    <h2 style="color: var(--primary);">⚡ Generar Partido (5 Opciones)</h2>
-    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:15px;">
-        Genera 5 opciones para que puedas elegir las 3 mejores para la votación.
-    </p>
-    
-    <button id="btnGenerateTeams" class="primary" style="font-size: 1.1rem; box-shadow: 0 0 20px rgba(6,182,212,0.3);">🎲 Generar Opciones</button>
-    <div id="generateError" class="error-msg"></div>
+<div id="fieldSection" class="box hidden" style="background: #f1f5f9; color: #1e293b;">
+    <h2 style="text-align:center; color:#1e293b;">Pizarra Táctica <span id="statusBadge" class="tag" style="background:#000; color:#fff; vertical-align:middle;">EDICIÓN</span></h2>
+    <p id="fieldInstruction" style="text-align:center; font-size:0.8rem; color:#64748b; margin-bottom:15px;">Mueve las fichas. Al terminar, guarda para que todos lo vean.</p>
+    
+    <div class="field-container" id="captureArea">
+      <div id="fullField" class="full-field">
+          <div class="field-line-center"></div>
+          <div class="field-circle"></div>
+          <div class="area-A"></div> <div class="area-B"></div> 
+      </div>
+      <div style="width: 100%; display: flex; justify-content: space-between; padding: 0 10px;">
+          <div style="background:#111827; color:white; padding:6px 15px; border-radius:20px; font-weight:bold; font-family:'Kanit'; font-size:0.8rem;">EQUIPO NEGRO</div>
+          <div style="background:#fff; color:#111827; border:2px solid #111827; padding:6px 15px; border-radius:20px; font-weight:bold; font-family:'Kanit'; font-size:0.8rem;">EQUIPO BLANCO</div>
+      </div>
+    </div>
 
-    <div id="teamsResult" style="margin-top:20px;"></div>
-  </div>
-
-  <div id="fieldSection" class="box hidden" style="background: #f1f5f9; color: #1e293b;">
-    <h2 style="text-align:center; color:#1e293b;">Pizarra Táctica (<span id="fieldPollName">Votación XXX</span>)</h2>
-    <p style="text-align:center; font-size:0.8rem; color:#64748b; margin-bottom:15px;">Arrastra las fichas para guardar la alineación ganadora.</p>
-    
-    <div class="field-container" id="captureArea">
-      <div id="fullField" class="full-field">
-          <div class="field-line-center"></div>
-          <div class="field-circle"></div>
-          <div class="area-A"></div> <div class="area-B"></div> </div>
-      <div style="width: 100%; display: flex; justify-content: space-between; padding: 0 10px;">
-          <div style="background:#111827; color:white; padding:6px 15px; border-radius:20px; font-weight:bold; font-family:'Kanit'; font-size:0.8rem;">EQUIPO NEGRO</div>
-          <div style="background:#fff; color:#111827; border:2px solid #111827; padding:6px 15px; border-radius:20px; font-weight:bold; font-family:'Kanit'; font-size:0.8rem;">EQUIPO BLANCO</div>
-      </div>
-    </div>
-
-    <div style="position:sticky; bottom:0; background:transparent; padding:15px 0; z-index:100;">
-        <button id="btnShareWhatsapp" class="whatsapp">📲 Enviar Imagen de Alineación</button>
-    </div>
-  </div>
-
+    <div id="misterFieldControls" class="hidden" style="position:sticky; bottom:0; background:transparent; padding:15px 0; z-index:100; gap:10px; display:flex; flex-direction:column;">
+        <button id="btnSaveTactics" class="primary" style="background:var(--bg-dark); border:1px solid var(--accent); color:var(--accent);">💾 Guardar Pizarra Final</button>
+        <button id="btnShareWhatsapp" class="whatsapp">📲 Compartir Imagen</button>
+    </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // --- CONFIG ---
-  const SUPABASE_URL = 'https://vayholflhqoyflbvuusa.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZayholflhqoyflbvuusaIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNzc5NjcsImV4cCI6MjA3ODY1Mzk2N30.QxD4_XbYlQarPRUcmoQQclw8cCnnzRiHZcYzSsUXGDA' ;
-  let supabase;
-  try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e) { console.error("Error Supabase", e); }
-
-  let allPlayers = [];
-  let currentUser = null;
-  let activePollId = null; // ID de la votación que se está visualizando/editando en la pizarra
-
-  // --- ELEMENTOS ---
-  const authBox = document.getElementById('authBox');
-  const appContent = document.getElementById('appContent');
-  const authMsg = document.getElementById('authMsg');
-  const playersListEl = document.getElementById('playersList');
-  const generateError = document.getElementById('generateError');
-  const btnShare = document.getElementById('btnShareWhatsapp');
-  const fullField = document.getElementById('fullField'); 
-  const teamsResultEl = document.getElementById('teamsResult');
-  const pollDashboardEl = document.getElementById('pollDashboard');
-
-  // --- EVENTOS ---
-  document.getElementById('btnRegister').addEventListener('click', () => handleAuth('signup'));
-  document.getElementById('btnLogin').addEventListener('click', () => handleAuth('signin'));
-  document.getElementById('btnAddPlayer').addEventListener('click', addPlayer);
-  document.getElementById('btnGenerateTeams').addEventListener('click', generateTeamOptions);
-  document.getElementById('btnSelectAll').addEventListener('click', selectAllPlayers);
-  document.getElementById('btnDeselectAll').addEventListener('click', deselectAllPlayers);
-  document.getElementById('btnRefreshPolls').addEventListener('click', loadPolls);
-  btnShare.addEventListener('click', shareFieldsImage);
-
-  // --- FUNCIONES UTILIDAD ---
-  function selectAllPlayers() { document.querySelectorAll('.p-select').forEach(c => c.checked = true); }
-  function deselectAllPlayers() { document.querySelectorAll('.p-select').forEach(c => c.checked = false); } 
-  function showError(msg) { generateError.textContent = msg; generateError.style.display = 'block'; }
-  function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
-  
-  // --- AUTH ---
-  async function handleAuth(type) { 
-    const email = document.getElementById('authEmail').value.trim();
-    const password = document.getElementById('authPassword').value;
-    
-    authMsg.style.color = '#94a3b8';
-    if (!email || !password) return showMsg('⚠️ Rellena los datos');
-    
-    showMsg('⏳ Conectando...');
-    let res = type === 'signup' ? await supabase.auth.signUp({ email, password }) : await supabase.auth.signInWithPassword({ email, password });
-
-    if (res.error) {
-        authMsg.style.color = '#ef4444';
-        showMsg(res.error.message);
-    } else { 
-        currentUser = res.data.user; 
-        showMsg('✅ ¡Vamos!'); 
-        setTimeout(initApp, 500);
-    }
-  }
-  function showMsg(txt) { authMsg.textContent = txt; }
-  async function initApp() { authBox.style.display = 'none'; appContent.classList.remove('hidden'); await loadPlayers(); await loadPolls(); }
-
-  // --- JUGADORES Y LISTA (Incluye lógica player_code) ---
-  async function loadPlayers() { 
-    if (!currentUser) return;
-    const { data } = await supabase.from('players').select('*').eq('user_id', currentUser.id);
-    allPlayers = data || [];
-    renderList();
-  }
-
-  // AÑADIR JUGADOR (AÑADIDO GENERACIÓN DE player_code)
-  async function addPlayer() { 
-    const nameIn = document.getElementById('playerName');
-    const skillIn = document.getElementById('playerSkill');
-    const posIn = document.getElementById('playerPosition');
-    
-    const name = nameIn.value.trim();
-    const rating = parseFloat(skillIn.value);
-    const position = posIn.value;
-
-    if (!name || !rating) return alert('Datos incompletos');
-    
-    // --- LÓGICA DE GENERACIÓN DE player_code (Mantiene tu requisito) ---
-    const namePrefix = name.substring(0, 4).toUpperCase();
-    const randomNumber = Math.floor(Math.random() * 99) + 1;
-    const generatedCode = `${namePrefix}${randomNumber}`;
-    
-    const newPlayer = { user_id: currentUser.id, name, position, rating, player_code: generatedCode };
-
-    // 1. Insertar en Supabase
-    const { data, error } = await supabase.from('players').insert([newPlayer]).select();
-    
-    if (error) {
-        console.error('Error insertando en Supabase:', error);
-        alert(`Error al guardar el jugador. ${error.message}. Si es un código duplicado, intenta con un nombre diferente.`);
-        return;
-    }
-    
-    // 2. Añadir a lista local y mostrar el código generado
-    if(data && data.length) {
-        allPlayers.push(data[0]); 
-        
-        alert(`¡Fichaje completado! Comparte este código con el jugador: ${generatedCode}`);
-        
-        // 3. Limpiar y renderizar
-        nameIn.value = ''; 
-        skillIn.value = '';
-        renderList();
-    }
-  }
-
-  // ELIMINAR JUGADOR
-  async function deletePlayer(playerId) {
-      if (!playerId) return;
-      if (!confirm("¿Eliminar jugador de la plantilla?")) return;
-      const { error } = await supabase.from('players').delete().eq('id', String(playerId));
-      if (error) {
-          console.error("Error al eliminar:", error);
-          alert('Error al eliminar. ' + error.message);
-          return;
-      }
-      allPlayers = allPlayers.filter(p => String(p.id) !== String(playerId));
-      renderList();
-  }
-
-  function renderList() { 
-    playersListEl.innerHTML = '';
-    document.getElementById('playerCount').textContent = `(${allPlayers.length})`;
-    const order = { portero: 1, defensa: 2, delantero: 3 };
-    
-    [...allPlayers].sort((a,b) => order[a.position] - order[b.position] || b.rating - a.rating).forEach(p => {
-      const playerId = p.id; 
-      const isDisabled = !playerId;
-      
-      const div = document.createElement('div');
-      div.className = 'player-row';
-      div.innerHTML = `
-        <div style="display:flex; align-items:center;">
-          <input type="checkbox" class="p-select" checked value="${p.id}" ${isDisabled ? 'disabled' : ''}>
-          <div>
-             <span style="font-weight:600; font-size:1rem; color:#f1f5f9;">${p.name}</span>
-             <span class="tag ${p.position}">${p.position}</span>
-              ${p.player_code ? `<span class="tag" style="background:#555; color:white; font-size:9px;">#${p.player_code}</span>` : ''}
-          </div>
-        </div>
-        <div style="display:flex; align-items:center; gap: 10px;">
-            <div class="rating-badge">${p.rating}</div>
-            <button class="outline delete-btn" data-id="${playerId}" style="border-color:#ef4444; color:#ef4444; padding: 4px 8px; font-size:0.7rem; width: auto; margin:0;" ${isDisabled ? 'disabled' : ''}>
-                🗑️
-            </button>
-        </div>
-      `;
-      playersListEl.appendChild(div);
-    });
-
-    document.querySelectorAll('.delete-btn').forEach(button => {
-        if (!button.disabled) {
-            button.addEventListener('click', (e) => {
-                const idToDelete = e.currentTarget.dataset.id;
-                if (idToDelete) deletePlayer(idToDelete);
-            });
-        }
-    });
-  }
-
-  // --- GENERACIÓN DE EQUIPOS (Genera 5) ---
-  function generateTeamOptions() { 
-    generateError.style.display = 'none';
-    const checks = document.querySelectorAll('.p-select:checked');
-    const selectedIds = Array.from(checks).map(c => c.value);
-    const pool = allPlayers.filter(p => selectedIds.includes(String(p.id)));
-
-    if (pool.length < 14) { showError('Selecciona al menos 14 jugadores para 7vs7.'); return; }
-    
-    const count = (pos) => pool.filter(p => p.position === pos).length;
-    if (count('portero') < 2) { showError('Faltan Porteros. Mínimo 2.'); return; }
-    if (count('defensa') < 6) { showError('Faltan Defensas. Mínimo 6 (3 por equipo).'); return; }
-    if (count('delantero') < 2) { showError('Faltan Delanteros. Mínimo 2 (1 por equipo).'); return; }
-
-    let variations = [];
-    const seenHashes = new Set(); 
-
-    for(let i=0; i<1000; i++) { // Intentamos 1000 veces para tener más variaciones
-        const attempt = createStrictMatch(pool);
-        if(!attempt) continue;
-        
-        const idsA = attempt.teamA.map(p => String(p.id)).sort().join('-');
-        const idsB = attempt.teamB.map(p => String(p.id)).sort().join('-');
-        const hash = [idsA, idsB].sort().join('::');
-
-        if(seenHashes.has(hash)) continue; 
-        seenHashes.add(hash);
-        variations.push(attempt);
-    }
-
-    variations.sort((a, b) => a.diff - b.diff); 
-    const top5 = variations.slice(0, 5); // Tomamos las 5 mejores
-    
-    if (top5.length === 0) { showError("Error generando combinaciones."); return; }
-    displayOptions(top5);
-  }
-
-  function createStrictMatch(originalPool) { /* ... lógica de equipo sin cambios ... */
-    const gks = shuffle(originalPool.filter(p => p.position === 'portero'));
-    const defs = shuffle(originalPool.filter(p => p.position === 'defensa'));
-    const fwds = shuffle(originalPool.filter(p => p.position === 'delantero'));
-
-    const teamA = []; const teamB = [];
-
-    teamA.push(gks.pop()); teamB.push(gks.pop());           
-    for(let k=0;k<3;k++) { teamA.push(defs.pop()); teamB.push(defs.pop()); } 
-    teamA.push(fwds.pop()); teamB.push(fwds.pop());        
-
-    let leftovers = [...gks, ...defs, ...fwds]; 
-    leftovers = shuffle(leftovers);
-
-    while(leftovers.length > 0) {
-        // Aseguramos que ambos equipos tengan 7, si el pool es 14, se reparte hasta 7.
-        if(teamA.length < 7 && teamA.length <= teamB.length) teamA.push(leftovers.pop());
-        else if(teamB.length < 7 && teamA.length > teamB.length) teamB.push(leftovers.pop());
-        else if(teamA.length < 7) teamA.push(leftovers.pop()); // Si A < 7 y B = 7 (solo si hay más de 14)
-        else if(teamB.length < 7) teamB.push(leftovers.pop()); // Si B < 7 y A = 7 (solo si hay más de 14)
-        else break; // Si ambos tienen 7 y aún hay left-overs, paramos aquí
-    }
-    
-    // Filtramos los que no entraron
-    const finalA = teamA.filter(p => p);
-    const finalB = teamB.filter(p => p);
-    
-    if(finalA.length === 0 || finalB.length === 0) return null; // Prevenir equipos vacíos
-
-    const getAvg = t => t.reduce((a,c)=>a+c.rating,0) / t.length;
-    const avgA = getAvg(finalA); const avgB = getAvg(finalB);
-
-    return { 
-        teamA: finalA, 
-        teamB: finalB, 
-        avgA: avgA.toFixed(2), 
-        avgB: avgB.toFixed(2), 
-        diff: Math.abs(avgA - avgB) 
-    };
-  }
-  
-  // MOSTRAR OPCIONES (Añadido checkbox y botón de votación)
-  function displayOptions(options) {
-    teamsResultEl.innerHTML = '';
-    
-    options.forEach((opt, index) => {
-        const div = document.createElement('div');
-        div.className = 'option-card';
-        div.dataset.optionIndex = index + 1;
-        
-        // Checkbox para seleccionar la opción
-        div.innerHTML = `
-            <input type="checkbox" class="poll-select-check" data-team-data='${JSON.stringify(opt)}' />
-            <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px; margin-bottom:10px;">
-                <h4 style="margin:0; color:var(--primary);">Opción ${index + 1}</h4>
-                <span class="tag" style="background:#334155; color:#fff;">Dif: ${opt.diff.toFixed(2)}</span>
-            </div>
-            <div class="team-columns">
-                <div class="team-col"><strong style="color:#94a3b8">Negro (${opt.avgA})</strong><ul>${renderListSimple(opt.teamA)}</ul></div>
-                <div class="team-col"><strong style="color:#f1f5f9">Blanco (${opt.avgB})</strong><ul>${renderListSimple(opt.teamB)}</ul></div>
-            </div>
-            <button class="outline select-opt-btn" style="margin-top:15px; width:100%; border-color:var(--accent); color:var(--accent);" data-index="${index+1}">Ver en Pizarra</button>
-        `;
-        teamsResultEl.appendChild(div);
-    });
-    
-    // Botón para crear votación
-    const createPollBtn = document.createElement('button');
-    createPollBtn.className = 'primary';
-    createPollBtn.textContent = '🚀 Crear Votación con 3 Seleccionadas';
-    createPollBtn.id = 'btnCreatePoll';
-    createPollBtn.addEventListener('click', createPoll);
-    teamsResultEl.appendChild(createPollBtn);
-
-    // Evento para ver en pizarra (solo visualización)
-    document.querySelectorAll('.select-opt-btn').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const teamData = JSON.parse(e.currentTarget.closest('.option-card').querySelector('.poll-select-check').dataset.teamData);
-            activePollId = null; // No hay poll activo para editar
-            document.getElementById('fieldPollName').textContent = `Opción ${e.currentTarget.dataset.index} (Vista Previa)`;
-            displayField(teamData.teamA, teamData.teamB);
-        });
-    });
-  }
-
-  function renderListSimple(t) {
-    const order={portero:0,defensa:1,delantero:2};
-    return [...t].sort((a,b)=>order[a.position]-order[b.position]).map(p=>`<li><span>${p.name}</span><span style="font-size:0.7rem;opacity:0.7;">${p.position.substring(0,3).toUpperCase()}</span></li>`).join('');
-  }
-
-  // --- GESTIÓN DE VOTACIONES (Panel de control) ---
-  async function createPoll() {
-    const selectedOptions = Array.from(document.querySelectorAll('.poll-select-check:checked'));
-    if (selectedOptions.length !== 3) {
-        return alert('Debes seleccionar exactamente 3 opciones para crear la votación.');
-    }
-
-    const pollName = prompt('Introduce un nombre para la votación (Ej: Partido 26 Nov):');
-    if (!pollName) return;
-
-    const optionsData = selectedOptions.map(c => JSON.parse(c.dataset.teamData));
-    
-    // Creamos el objeto para insertar
-    const newPoll = {
-        mister_id: currentUser.id,
-        status: 'open',
-        poll_name: pollName, // Se asume que añadirás 'poll_name' a la tabla 'polls'
-        option_1: optionsData[0],
-        option_2: optionsData[1],
-        option_3: optionsData[2],
-    };
-
-    const { data, error } = await supabase.from('polls').insert([newPoll]).select();
-
-    if (error) {
-        console.error('Error al crear votación:', error);
-        return alert('Error al guardar la votación. ' + error.message);
-    }
-
-    const pollId = data[0].id;
-    const shareLink = `${window.location.origin}/votar.html?id=${pollId}`;
-    alert(`✅ ¡Votación Creada! Copia el enlace para compartir con los jugadores:\n\n${shareLink}`);
-    
-    // Limpiamos la sección de resultados y recargamos el dashboard
-    teamsResultEl.innerHTML = '';
-    loadPolls();
-  }
-
-  async function loadPolls() {
-    pollDashboardEl.innerHTML = '<p style="color:var(--text-muted); font-size:0.8rem;">Cargando...</p>';
-    const { data: polls, error } = await supabase.from('polls')
-      .select('*, votes(count)')
-      .eq('mister_id', currentUser.id)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-        pollDashboardEl.innerHTML = `<p style="color:#fca5a5;">Error al cargar: ${error.message}</p>`;
-        return;
-    }
-
-    if (polls.length === 0) {
-        pollDashboardEl.innerHTML = `<p style="color:var(--text-muted);">Aún no has creado ninguna votación.</p>`;
-        return;
-    }
-
-    pollDashboardEl.innerHTML = '';
-    polls.forEach(p => {
-        const totalVotes = p.votes[0].count;
-        const statusTag = p.status === 'open' ? `<span class="poll-status-tag poll-status-open">Abierta (${totalVotes} votos)</span>` : `<span class="poll-status-tag poll-status-closed">CERRADA</span>`;
-        const pollName = p.poll_name || `Votación sin nombre (${new Date(p.created_at).toLocaleDateString()})`;
-        
-        const div = document.createElement('div');
-        div.className = 'poll-card';
-        div.innerHTML = `
-            <div class="poll-info">
-                <strong style="color:var(--primary);">${pollName}</strong>
-                ${statusTag}
-            </div>
-            <div class="poll-actions">
-                ${p.status === 'open' ? `<button class="poll-action close-poll-btn" data-id="${p.id}" data-votes="${totalVotes}">Cerrar & Ganador</button>` : ''}
-                <button class="poll-action view-poll-btn" style="background:#475569;" data-id="${p.id}" data-name="${pollName}" data-winning-option="${p.winning_option || 1}">Ver Pizarra</button>
-            </div>
-        `;
-        pollDashboardEl.appendChild(div);
-    });
-    
-    document.querySelectorAll('.close-poll-btn').forEach(b => b.addEventListener('click', (e) => closePoll(e.currentTarget.dataset.id, e.currentTarget.dataset.votes)));
-    document.querySelectorAll('.view-poll-btn').forEach(b => b.addEventListener('click', (e) => viewPollInField(e.currentTarget.dataset.id, e.currentTarget.dataset.name, e.currentTarget.dataset.winningOption)));
-
-  }
-
-  async function closePoll(pollId, totalVotes) {
-    if (!confirm(`Estás a punto de cerrar la votación. ¿Deseas continuar? (${totalVotes} votos registrados)`)) return;
-
-    // 1. Contar votos
-    const { data: voteCounts, error: voteError } = await supabase.from('votes')
-      .select('voted_for_option, count')
-      .eq('poll_id', pollId)
-      .rollup();
-
-    if (voteError) return alert('Error al contar votos: ' + voteError.message);
-    
-    // Determinar el ganador
-    let winner = 1;
-    let maxVotes = 0;
-    voteCounts.forEach(c => {
-        if (c.count > maxVotes) {
-            maxVotes = c.count;
-            winner = c.voted_for_option;
-        }
-    });
-    if (maxVotes === 0) winner = 1; // Si no hay votos, por defecto la Opción 1
-
-    // 2. Cerrar el poll en la DB
-    const { error: closeError } = await supabase.from('polls')
-      .update({ status: 'closed', winning_option: winner })
-      .eq('id', pollId);
-
-    if (closeError) return alert('Error al cerrar votación: ' + closeError.message);
-
-    alert(`🎉 Votación cerrada con éxito. Opción ganadora: #${winner}.`);
-    loadPolls();
-  }
-
-  async function viewPollInField(pollId, pollName, winningOption) {
-    activePollId = pollId;
-    document.getElementById('fieldPollName').textContent = pollName;
-    
-    const { data: poll, error } = await supabase.from('polls').select('*').eq('id', pollId).single();
-    if (error) return alert('Error al cargar datos del poll.');
-
-    // Obtener los equipos de la opción ganadora
-    const teamsKey = `option_${winningOption}`;
-    const teams = poll[teamsKey];
-    
-    if (!teams || !teams.teamA || !teams.teamB) {
-        return alert('Datos de equipo no válidos para la opción ganadora.');
-    }
-
-    // Mostrar la pizarra con los equipos y el estado guardado
-    displayField(teams.teamA, teams.teamB, poll.tactics_board_state);
-    
-    document.getElementById('fieldSection').classList.remove('hidden');
-    // Desplazar hacia la pizarra
-    document.getElementById('fieldSection').scrollIntoView({ behavior: 'smooth' });
-  }
-
-  // --- PIZARRA TÁCTICA Y DRAG-AND-DROP ---
-
-  function displayField(teamA, teamB, positions = null) {
-    fullField.querySelectorAll('.player-token').forEach(e => e.remove());
-
-    drawTeamOnUnifiedField(teamA, 'token-black', 'bottom', positions); 
-    drawTeamOnUnifiedField(teamB, 'token-white', 'top', positions);    
-
-    // Habilitar arrastre para todas las fichas nuevas
-    fullField.querySelectorAll('.player-token').forEach(makeDraggable);
-  }
-
-  function drawTeamOnUnifiedField(team, colorClass, half, initialPositions) {
-      const isBottomHalf = half === 'bottom';
-      // Coordenadas fijas OBLIGATORIAS (Esqueleto 1-3-1)
-      const coordsFixed = {
-          portero:   [{x:140, y: isBottomHalf ? 520 : 40}], 
-          defensa:   [
-              {x:50, y: isBottomHalf ? 450 : 100}, 
-              {x:140, y: isBottomHalf ? 450 : 100}, 
-              {x:230, y: isBottomHalf ? 450 : 100}
-          ], 
-          delantero: [{x:140, y: isBottomHalf ? 350 : 200}] 
-      };
-      const slots = JSON.parse(JSON.stringify(coordsFixed));
-      
-      // Coordenadas de relleno para el 7º jugador
-      const fillerPositions = { 
-          delantero: [ 
-              {x: 80, y: isBottomHalf ? 380 : 220},
-              {x: 200, y: isBottomHalf ? 380 : 220},
-              {x: 140, y: isBottomHalf ? 400 : 200},
-          ],
-          defensa: [ 
-              {x: 50, y: isBottomHalf ? 490 : 60}, 
-              {x: 230, y: isBottomHalf ? 490 : 60}, 
-          ]
-      };
-      const usedFillerSpots = { delantero: 0, defensa: 0 };
-      
-      team.forEach(p => {
-          let pos = {x: 0, y: 0};
-          const playerId = String(p.id);
-          
-          // 1. Verificar si hay posición guardada (siempre se usa si existe)
-          const savedPos = initialPositions ? initialPositions.find(ip => String(ip.id) === playerId) : null;
-
-          if (savedPos) {
-              pos = {x: savedPos.x, y: savedPos.y};
-          } else {
-              // 2. Usar lógica de posición inicial si no hay posición guardada
-              if (slots[p.position] && slots[p.position].length > 0) {
-                  pos = slots[p.position].shift();
-              } else if (p.position === 'delantero' && usedFillerSpots.delantero < fillerPositions.delantero.length) {
-                  pos = fillerPositions.delantero[usedFillerSpots.delantero];
-                  usedFillerSpots.delantero++;
-              } else if (p.position === 'defensa' && usedFillerSpots.defensa < fillerPositions.defensa.length) {
-                  pos = fillerPositions.defensa[usedFillerSpots.defensa];
-                  usedFillerSpots.defensa++;
-              } else {
-                  // Caso de emergencia (más de 7 jugadores)
-                  const yCenter = isBottomHalf ? 300 + Math.random() * 50 : 250 + Math.random() * 50;
-                  pos = {x: 60 + Math.random() * 200, y: yCenter};
-              }
-          }
-          createToken(p, fullField, colorClass, pos.x, pos.y);
-      });
-  }
-
-  function createToken(p, div, cls, x, y) {
-      const el = document.createElement('div');
-      el.className = `player-token ${cls}`;
-      el.dataset.playerId = p.id;
-      el.dataset.playerName = p.name;
-      el.textContent = p.name.substring(0,2).toUpperCase();
-      el.style.left = `${x}px`; el.style.top = `${y}px`;
-      const l = document.createElement('div'); l.className='player-label'; l.textContent=p.name;
-      el.appendChild(l);
-      div.appendChild(el);
-  }
-
-  // --- LÓGICA DRAG-AND-DROP Y GUARDADO ---
-  let currentDragItem = null;
-  let offset = {x: 0, y: 0};
-
-  function makeDraggable(el) {
-      el.addEventListener('pointerdown', onPointerDown);
-      el.addEventListener('touchstart', onPointerDown);
-  }
-
-  function onPointerDown(e) {
-      if (!activePollId) return; // Solo se puede arrastrar si hay un poll activo
-
-      const el = e.currentTarget;
-      currentDragItem = el;
-
-      // Calcula el desplazamiento desde el punto de click hasta la esquina superior izquierda
-      const rect = el.getBoundingClientRect();
-      const fieldRect = fullField.getBoundingClientRect();
-      
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-      offset.x = clientX - rect.left;
-      offset.y = clientY - rect.top;
-
-      el.style.transition = 'none'; // Desactivar transición al arrastrar
-
-      document.addEventListener('pointermove', onPointerMove);
-      document.addEventListener('pointerup', onPointerUp);
-      document.addEventListener('touchmove', onPointerMove, { passive: false });
-      document.addEventListener('touchend', onPointerUp);
-  }
-
-  function onPointerMove(e) {
-      if (!currentDragItem) return;
-      e.preventDefault(); // Prevenir scroll en móviles
-
-      const fieldRect = fullField.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-      // Nueva posición relativa al campo
-      let newX = clientX - fieldRect.left - offset.x;
-      let newY = clientY - fieldRect.top - offset.y;
-      
-      // Aplicar límites del campo (320x600px - tamaño de ficha 42px)
-      const tokenSize = 42;
-      newX = Math.max(0, Math.min(newX, fieldRect.width - tokenSize));
-      newY = Math.max(0, Math.min(newY, fieldRect.height - tokenSize));
-
-      currentDragItem.style.left = `${newX}px`;
-      currentDragItem.style.top = `${newY}px`;
-  }
-
-  function onPointerUp() {
-      if (currentDragItem) {
-          currentDragItem.style.transition = 'transform 0.1s'; // Restaurar transición
-          saveFieldPosition();
-          currentDragItem = null;
-      }
-
-      document.removeEventListener('pointermove', onPointerMove);
-      document.removeEventListener('pointerup', onPointerUp);
-      document.removeEventListener('touchmove', onPointerMove);
-      document.removeEventListener('touchend', onPointerUp);
-  }
-
-  async function saveFieldPosition() {
-      if (!activePollId) return;
-
-      const positions = [];
-      fullField.querySelectorAll('.player-token').forEach(token => {
-          positions.push({
-              id: token.dataset.playerId,
-              name: token.dataset.playerName,
-              x: parseFloat(token.style.left),
-              y: parseFloat(token.style.top),
-          });
-      });
-
-      // Guardar el array de posiciones en el campo tactics_board_state
-      const { error } = await supabase.from('polls')
-          .update({ tactics_board_state: positions })
-          .eq('id', activePollId);
-
-      if (error) console.error('Error al guardar posición:', error);
-      // Si hay éxito, Supabase Realtime se encarga de actualizar en votar.html
-  }
-
-  // --- COMPARTIR IMAGEN POR WHATSAPP ---
-  async function shareFieldsImage() {
-      btnShare.disabled = true;
-      btnShare.innerHTML = '⏳ Generando imagen...';
-
-      const element = document.getElementById('captureArea');
-
-      try {
-          // html2canvas captura el DIV del campo
-          const canvas = await html2canvas(element, { scale: 2, backgroundColor: '#e2e8f0' });
-          const dataUrl = canvas.toDataURL('image/png');
-
-          // Usamos la API nativa de compartir
-          if (navigator.share) {
-              // Convertir Data URL a Blob (necesario para compartir nativamente)
-              const response = await fetch(dataUrl);
-              const blob = await response.blob();
-              const file = new File([blob], 'alineacion.png', { type: 'image/png' });
-
-              await navigator.share({
-                  files: [file],
-                  title: 'Alineación Táctica',
-                  text: `¡Mira la alineación de hoy! ${document.getElementById('fieldPollName').textContent}.`,
-              });
-          } else {
-              // Si la API de Share no existe (navegadores antiguos o desktop)
-              window.open(dataUrl, '_blank');
-              alert('Abre la imagen en una nueva pestaña. Desde ahí, haz clic derecho para guardar/compartir.');
-          }
-
-      } catch (err) {
-          console.error('Error al compartir o generar imagen:', err);
-          alert('Error al generar la imagen. Inténtalo de nuevo.');
-      } finally {
-          btnShare.disabled = false;
-          btnShare.innerHTML = '📲 Enviar Imagen de Alineación';
-      }
-  }
-
-  // --- INICIALIZACIÓN ---
-  supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-          currentUser = session.user;
-          initApp();
-      }
-  });
+  // --- CONFIG ---
+  const SUPABASE_URL = 'https://vayholflhqoyflbvuusa.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheWhvbGZsaHFveWZsYnZ1dXNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNzc5NjcsImV4cCI6MjA3ODY1Mzk2N30.QxD4_XbYlQarPRUcmoQQclw8cCnnzRiHZcYzSsUXGDA' ;
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let allPlayers = [];
+  let currentUser = null;
+  let generatedOptions = []; // Las 5 generadas
+  let selectedOptionsForPoll = []; // Las 3 elegidas
+  let currentPollId = null;
+  let playerInfo = null; // Datos del jugador logueado
+  
+  // ELEMENTOS DOM
+  const misterView = document.getElementById('misterView');
+  const playerAuthView = document.getElementById('playerAuthView');
+  const playerVoteView = document.getElementById('playerVoteView');
+  const fieldSection = document.getElementById('fieldSection');
+  const fullField = document.getElementById('fullField');
+  
+  // --- RUTEO INICIAL ---
+  const urlParams = new URLSearchParams(window.location.search);
+  const pollParam = urlParams.get('poll');
+
+  if (pollParam) {
+      initPlayerMode(pollParam);
+  } else {
+      initMisterMode();
+  }
+
+  // ===================== MODO MISTER =====================
+  function initMisterMode() {
+      // Eventos Auth
+      document.getElementById('btnRegister').addEventListener('click', () => handleAuth('signup'));
+      document.getElementById('btnLogin').addEventListener('click', () => handleAuth('signin'));
+      
+      // Eventos App
+      document.getElementById('btnAddPlayer').addEventListener('click', addPlayer);
+      document.getElementById('btnGenerateTeams').addEventListener('click', generateTeamOptions);
+      document.getElementById('btnSelectAll').addEventListener('click', () => toggleAllPlayers(true));
+      document.getElementById('btnDeselectAll').addEventListener('click', () => toggleAllPlayers(false));
+      document.getElementById('btnPublishPoll').addEventListener('click', publishPoll);
+      document.getElementById('btnClosePoll').addEventListener('click', closePollAndGoToField);
+      document.getElementById('btnSaveTactics').addEventListener('click', saveFinalTactics);
+      document.getElementById('btnShareWhatsapp').addEventListener('click', shareFieldsImage);
+      
+      // Reset titulo
+      document.getElementById('appTitle').addEventListener('click', () => window.location.href = window.location.pathname);
+  }
+
+  // --- AUTH MISTER ---
+  async function handleAuth(type) { 
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value;
+    const msg = document.getElementById('authMsg');
+    
+    if (!email || !password) return msg.textContent = '⚠️ Rellena los datos';
+    
+    msg.textContent = '⏳ Conectando...';
+    let res = type === 'signup' ? await supabase.auth.signUp({ email, password }) : await supabase.auth.signInWithPassword({ email, password });
+
+    if (res.error) {
+        msg.style.color = '#ef4444';
+        msg.textContent = res.error.message;
+    } else { 
+        currentUser = res.data.user; 
+        msg.textContent = '✅ ¡Vamos!'; 
+        setTimeout(() => {
+            document.getElementById('authBox').style.display = 'none';
+            document.getElementById('appContent').classList.remove('hidden');
+            loadPlayers();
+        }, 500);
+    }
+  }
+
+  // --- GESTIÓN JUGADORES ---
+  async function loadPlayers() { 
+    if (!currentUser) return;
+    const { data } = await supabase.from('players').select('*').eq('user_id', currentUser.id);
+    allPlayers = data || [];
+    renderList();
+  }
+
+  async function addPlayer() { 
+    const name = document.getElementById('playerName').value.trim();
+    const rating = parseFloat(document.getElementById('playerSkill').value);
+    const position = document.getElementById('playerPosition').value;
+    
+    if (!name || !rating) return alert('Datos incompletos');
+    
+    // Generar un código simple si no existe lógica backend
+    const randomCode = name.substring(0,2).toUpperCase() + Math.floor(100 + Math.random() * 900);
+    
+    const newPlayer = { user_id: currentUser.id, name, position, rating, player_code: randomCode }; // player_code debe existir en tu tabla
+    
+    const { data, error } = await supabase.from('players').insert([newPlayer]).select();
+    if (!error && data) {
+        allPlayers.push(data[0]); 
+        document.getElementById('playerName').value = ''; 
+        document.getElementById('playerSkill').value = '';
+        renderList();
+    } else {
+        console.error(error);
+        alert("Error: Asegúrate de que la columna 'player_code' existe en la tabla 'players'.");
+    }
+  }
+
+  async function deletePlayer(id) {
+      if(!confirm("¿Borrar?")) return;
+      await supabase.from('players').delete().eq('id', id);
+      allPlayers = allPlayers.filter(p => p.id !== id);
+      renderList();
+  }
+
+  function renderList() { 
+    const list = document.getElementById('playersList');
+    list.innerHTML = '';
+    document.getElementById('playerCount').textContent = `(${allPlayers.length})`;
+    const order = { portero: 1, defensa: 2, delantero: 3 };
+    
+    [...allPlayers].sort((a,b) => order[a.position] - order[b.position] || b.rating - a.rating).forEach(p => {
+      const div = document.createElement('div');
+      div.className = 'player-row';
+      div.innerHTML = `
+        <div style="display:flex; align-items:center;">
+          <input type="checkbox" class="p-select" checked value="${p.id}">
+          <div>
+             <span style="font-weight:600; font-size:1rem; color:#f1f5f9;">${p.name}</span>
+             <span class="tag ${p.position}">${p.position}</span>
+             <span style="font-size:0.7rem; color:#64748b; margin-left:5px;">Code: ${p.player_code || 'N/A'}</span>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap: 10px;">
+            <div class="rating-badge">${p.rating}</div>
+            <button class="outline" onclick="deletePlayer('${p.id}')" style="border-color:#ef4444; color:#ef4444; padding:4px 8px; width:auto;">🗑️</button>
+        </div>
+      `;
+      // Hack para pasar la función deletePlayer al scope global o adjuntar evento
+      div.querySelector('button').onclick = () => deletePlayer(p.id);
+      list.appendChild(div);
+    });
+  }
+  function toggleAllPlayers(state) { document.querySelectorAll('.p-select').forEach(c => c.checked = state); }
+
+  // --- GENERACIÓN DE EQUIPOS ---
+  function generateTeamOptions() { 
+    const errorEl = document.getElementById('generateError');
+    errorEl.style.display = 'none';
+    
+    const selectedIds = Array.from(document.querySelectorAll('.p-select:checked')).map(c => c.value);
+    const pool = allPlayers.filter(p => selectedIds.includes(String(p.id)));
+
+    if (pool.length < 14) return showError('Selecciona al menos 14 jugadores.');
+    
+    // Validar posiciones
+    const count = (pos) => pool.filter(p => p.position === pos).length;
+    if (count('portero') < 2) return showError('Faltan Porteros (min 2).');
+    if (count('defensa') < 6) return showError('Faltan Defensas (min 6).');
+    
+    // Generar 5 opciones
+    let variations = [];
+    const seenHashes = new Set(); 
+
+    for(let i=0; i<800; i++) { 
+        if (variations.length >= 5) break; // Queremos 5
+        const attempt = createStrictMatch(pool);
+        if(!attempt) continue;
+        
+        const idsA = attempt.teamA.map(p => p.id).sort().join('-');
+        const idsB = attempt.teamB.map(p => p.id).sort().join('-');
+        const hash = [idsA, idsB].sort().join('::');
+
+        if(!seenHashes.has(hash)) { 
+            seenHashes.add(hash);
+            variations.push(attempt);
+        }
+    }
+    
+    variations.sort((a, b) => a.diff - b.diff);
+    generatedOptions = variations.slice(0, 5); // Guardamos las 5
+    displayMisterOptions(generatedOptions);
+  }
+
+  function createStrictMatch(originalPool) {
+    const gks = shuffle(originalPool.filter(p => p.position === 'portero'));
+    const defs = shuffle(originalPool.filter(p => p.position === 'defensa'));
+    const fwds = shuffle(originalPool.filter(p => p.position === 'delantero'));
+
+    const teamA = []; const teamB = [];
+    teamA.push(gks.pop()); teamB.push(gks.pop());            
+    for(let k=0;k<3;k++) { teamA.push(defs.pop()); teamB.push(defs.pop()); } 
+    // Rellenar delanteros (mínimo 1)
+    if(fwds.length >= 2) { teamA.push(fwds.pop()); teamB.push(fwds.pop()); }
+
+    let leftovers = [...gks, ...defs, ...fwds]; 
+    leftovers = shuffle(leftovers);
+
+    while(leftovers.length > 0) {
+        if(teamA.length <= teamB.length) teamA.push(leftovers.pop());
+        else teamB.push(leftovers.pop());
+    }
+    
+    const getAvg = t => t.reduce((a,c)=>a+c.rating,0) / t.length;
+    const avgA = getAvg(teamA); const avgB = getAvg(teamB);
+    return { teamA, teamB, avgA: avgA.toFixed(2), avgB: avgB.toFixed(2), diff: Math.abs(avgA - avgB) };
+  }
+  function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
+  function showError(msg) { const e = document.getElementById('generateError'); e.textContent=msg; e.style.display='block'; }
+
+  // --- UI SELECCIÓN MISTER ---
+  function displayMisterOptions(options) {
+    const container = document.getElementById('teamsResult');
+    container.innerHTML = '';
+    selectedOptionsForPoll = [];
+    updatePublishButton();
+    
+    document.getElementById('misterPollControls').classList.remove('hidden');
+
+    options.forEach((opt, index) => {
+        const div = document.createElement('div');
+        div.className = 'option-card';
+        div.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px; margin-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <input type="checkbox" class="opt-checkbox" data-idx="${index}">
+                    <h4 style="margin:0; color:var(--primary);">Opción ${index + 1}</h4>
+                </div>
+                <span class="tag" style="background:#334155; color:#fff;">Dif: ${opt.diff.toFixed(2)}</span>
+            </div>
+            <div class="team-columns">
+                <div class="team-col"><strong style="color:#94a3b8">Negro (${opt.avgA})</strong><ul>${renderListSimple(opt.teamA)}</ul></div>
+                <div class="team-col"><strong style="color:#f1f5f9">Blanco (${opt.avgB})</strong><ul>${renderListSimple(opt.teamB)}</ul></div>
+            </div>
+        `;
+        div.querySelector('.opt-checkbox').addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx);
+            if (e.target.checked) {
+                if (selectedOptionsForPoll.length >= 3) {
+                    e.target.checked = false;
+                    alert("Solo puedes seleccionar 3 opciones.");
+                } else {
+                    div.classList.add('selected');
+                    selectedOptionsForPoll.push(generatedOptions[idx]);
+                }
+            } else {
+                div.classList.remove('selected');
+                selectedOptionsForPoll = selectedOptionsForPoll.filter(o => o !== generatedOptions[idx]);
+            }
+            updatePublishButton();
+        });
+        container.appendChild(div);
+    });
+  }
+
+  function updatePublishButton() {
+      const btn = document.getElementById('btnPublishPoll');
+      btn.disabled = selectedOptionsForPoll.length !== 3;
+      btn.innerHTML = selectedOptionsForPoll.length === 3 ? "🚀 PUBLICAR VOTACIÓN" : `Selecciona 3 opciones (${selectedOptionsForPoll.length}/3)`;
+  }
+
+  function renderListSimple(t) {
+    const order={portero:0,defensa:1,delantero:2};
+    return [...t].sort((a,b)=>order[a.position]-order[b.position]).map(p=>`<li><span>${p.name}</span><span style="font-size:0.7rem;opacity:0.7;">${p.position.substring(0,3).toUpperCase()}</span></li>`).join('');
+  }
+
+  // --- LOGICA VOTACIÓN MISTER ---
+  async function publishPoll() {
+      if(!currentUser) return;
+      document.getElementById('btnPublishPoll').disabled = true;
+      document.getElementById('btnPublishPoll').innerText = "Creando encuesta...";
+
+      // Guardamos en Supabase
+      const { data, error } = await supabase
+        .from('polls')
+        .insert([{ 
+            user_id: currentUser.id, 
+            options: selectedOptionsForPoll,
+            status: 'open'
+        }])
+        .select();
+
+      if (error) { alert('Error creando encuesta'); console.log(error); return; }
+      
+      currentPollId = data[0].id;
+      
+      // UI Update
+      document.getElementById('btnPublishPoll').classList.add('hidden');
+      const infoBox = document.getElementById('activePollInfo');
+      infoBox.classList.remove('hidden');
+      
+      const shareUrl = `${window.location.origin}${window.location.pathname}?poll=${currentPollId}`;
+      document.getElementById('pollLinkDisplay').textContent = shareUrl;
+
+      // Iniciar escucha de votos
+      setupMisterLiveResults();
+  }
+
+  function setupMisterLiveResults() {
+      const container = document.getElementById('liveResults');
+      container.innerHTML = ''; // Limpiar
+      
+      // Renderizar barras vacías
+      selectedOptionsForPoll.forEach((opt, idx) => {
+          const div = document.createElement('div');
+          div.style.marginBottom = '15px';
+          div.innerHTML = `
+            <div style="font-size:0.9rem; display:flex; justify-content:space-between;">
+                <span>Opción ${idx+1}</span> <span id="count-${idx}">0 votos (0%)</span>
+            </div>
+            <div class="vote-progress-container"><div id="bar-${idx}" class="vote-progress-bar"></div></div>
+          `;
+          container.appendChild(div);
+      });
+
+      // Suscripción Realtime
+      supabase.channel('public:votes')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'votes', filter: `poll_id=eq.${currentPollId}` }, payload => {
+            updateVoteCounts();
+        })
+        .subscribe();
+      
+      updateVoteCounts(); // Primera carga
+  }
+
+  async function updateVoteCounts() {
+      const { data: votes } = await supabase.from('votes').select('choice_index').eq('poll_id', currentPollId);
+      const total = votes.length;
+      
+      selectedOptionsForPoll.forEach((_, idx) => {
+          const count = votes.filter(v => v.choice_index === idx).length;
+          const pct = total === 0 ? 0 : Math.round((count / total) * 100);
+          
+          document.getElementById(`bar-${idx}`).style.width = `${pct}%`;
+          document.getElementById(`count-${idx}`).textContent = `${count} votos (${pct}%)`;
+      });
+  }
+
+  async function closePollAndGoToField() {
+      if(!confirm("¿Cerrar votación y elegir ganador?")) return;
+      
+      // Obtener ganador
+      const { data: votes } = await supabase.from('votes').select('choice_index').eq('poll_id', currentPollId);
+      
+      // Contar
+      let counts = [0,0,0];
+      votes.forEach(v => counts[v.choice_index]++);
+      let maxVotes = Math.max(...counts);
+      let winnerIdx = counts.indexOf(maxVotes); // Simple: el primero que tenga el maximo gana en empate
+
+      const winnerOption = selectedOptionsForPoll[winnerIdx];
+      
+      // Actualizar DB
+      await supabase.from('polls').update({ status: 'closed' }).eq('id', currentPollId);
+
+      // Mostrar Pizarra
+      misterView.classList.add('hidden');
+      fieldSection.classList.remove('hidden');
+      document.getElementById('misterFieldControls').classList.remove('hidden'); // Botones mister
+
+      renderField(winnerOption);
+      
+      // Scroll
+      setTimeout(() => fieldSection.scrollIntoView({behavior:'smooth'}), 200);
+  }
+  
+  // --- PIZARRA Y GUARDADO ---
+  function renderField(option) {
+      fullField.querySelectorAll('.player-token').forEach(e => e.remove());
+      drawTeamOnUnifiedField(option.teamA, 'token-black', 'bottom'); 
+      drawTeamOnUnifiedField(option.teamB, 'token-white', 'top'); 
+  }
+
+  async function saveFinalTactics() {
+      const btn = document.getElementById('btnSaveTactics');
+      btn.textContent = "Guardando...";
+      
+      // Capturar posiciones actuales de los tokens
+      const finalState = [];
+      document.querySelectorAll('.player-token').forEach(token => {
+          finalState.push({
+              name: token.querySelector('.player-label').textContent, // Usamos nombre como ID simple
+              x: token.style.left,
+              y: token.style.top,
+              cls: token.classList.contains('token-black') ? 'token-black' : 'token-white'
+          });
+      });
+
+      const { error } = await supabase.from('polls').update({ final_tactics: finalState }).eq('id', currentPollId);
+      
+      if(!error) {
+          btn.textContent = "✅ Guardado y Visible para Jugadores";
+          setTimeout(() => btn.textContent = "💾 Actualizar Pizarra", 2000);
+      } else {
+          alert("Error guardando");
+      }
+  }
+
+
+  // ===================== MODO JUGADOR =====================
+  function initPlayerMode(pollId) {
+      currentPollId = pollId;
+      misterView.classList.add('hidden');
+      playerAuthView.classList.remove('hidden');
+
+      document.getElementById('btnPlayerLogin').addEventListener('click', async () => {
+          const code = document.getElementById('playerCodeInput').value.trim();
+          const msg = document.getElementById('playerLoginMsg');
+          
+          if (!code) return msg.textContent = "Introduce tu código";
+
+          msg.textContent = "Verificando...";
+          // Verificar código (asumiendo que player_code es unico)
+          const { data, error } = await supabase.from('players').select('*').eq('player_code', code).maybeSingle();
+          
+          if (error || !data) {
+              msg.textContent = "Código no encontrado o incorrecto.";
+              return;
+          }
+          
+          playerInfo = data;
+          playerAuthView.classList.add('hidden');
+          setupPlayerPollView();
+      });
+  }
+
+  async function setupPlayerPollView() {
+      // 1. Obtener datos de la encuesta
+      const { data: poll } = await supabase.from('polls').select('*').eq('id', currentPollId).single();
+      
+      if (!poll) { alert("Encuesta no encontrada"); return; }
+
+      // Verificar si ya está cerrada
+      if (poll.status === 'closed') {
+          showFinalField(poll.final_tactics);
+          return;
+      }
+      
+      // Verificar si ya votó
+      const { data: existingVote } = await supabase.from('votes').select('*').eq('poll_id', currentPollId).eq('player_code', playerInfo.player_code).maybeSingle();
+
+      if (existingVote) {
+          showWaitingScreen();
+          listenForClosure();
+      } else {
+          renderPlayerOptions(poll.options);
+      }
+      
+      // Escuchar cierre
+      listenForClosure();
+  }
+
+  function renderPlayerOptions(options) {
+      playerVoteView.classList.remove('hidden');
+      const container = document.getElementById('playerVoteOptions');
+      container.innerHTML = '';
+      
+      options.forEach((opt, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'vote-btn';
+          btn.style.marginTop = '20px';
+          btn.innerHTML = `
+            <div style="font-size:1.2rem; margin-bottom:5px;">OPCIÓN ${idx+1}</div>
+            <div style="font-size:0.8rem; opacity:0.8;">Equipo Negro (${opt.avgA}) vs Blanco (${opt.avgB})</div>
+          `;
+          btn.onclick = () => submitVote(idx);
+          container.appendChild(btn);
+      });
+  }
+
+  async function submitVote(idx) {
+      const { error } = await supabase.from('votes').insert([{
+          poll_id: currentPollId,
+          player_code: playerInfo.player_code,
+          choice_index: idx
+      }]);
+
+      if (error) {
+          alert("Error al votar. ¿Quizás ya votaste?");
+      } else {
+          document.getElementById('playerVoteOptions').classList.add('hidden');
+          showWaitingScreen();
+      }
+  }
+
+  function showWaitingScreen() {
+      playerVoteView.classList.remove('hidden');
+      document.getElementById('waitingForMister').classList.remove('hidden');
+      document.getElementById('playerVoteOptions').classList.add('hidden');
+  }
+
+  function listenForClosure() {
+      supabase.channel('public:polls')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'polls', filter: `id=eq.${currentPollId}` }, payload => {
+             if (payload.new.status === 'closed' && payload.new.final_tactics) {
+                 showFinalField(payload.new.final_tactics);
+             } else if (payload.new.status === 'closed' && !payload.new.final_tactics) {
+                 // Mister cerró pero no guardó pizarra aun
+                 document.getElementById('waitingForMister').innerHTML = "<h3>Míster decidiendo táctica...</h3>";
+             }
+        })
+        .subscribe();
+  }
+
+  function showFinalField(tacticsData) {
+      if (!tacticsData) return;
+      playerVoteView.classList.add('hidden');
+      fieldSection.classList.remove('hidden');
+      document.getElementById('statusBadge').textContent = "OFICIAL";
+      document.getElementById('statusBadge').style.background = "var(--primary)";
+      document.getElementById('fieldInstruction').textContent = "Esta es la alineación definitiva.";
+      
+      // Ocultar controles de mister
+      document.getElementById('misterFieldControls').classList.add('hidden'); 
+      // Mostrar boton de compartir solo para descargar
+      // document.getElementById('fieldSection').appendChild(...) // Opcional
+
+      fullField.querySelectorAll('.player-token').forEach(e => e.remove());
+      
+      tacticsData.forEach(t => {
+          const el = document.createElement('div');
+          el.className = `player-token ${t.cls}`;
+          el.textContent = t.name.substring(0,2).toUpperCase();
+          el.style.left = t.x; el.style.top = t.y;
+          // Deshabilitar Drag en modo vista
+          el.style.pointerEvents = 'none';
+          
+          const l = document.createElement('div'); l.className='player-label'; l.textContent=t.name;
+          el.appendChild(l);
+          fullField.appendChild(el);
+      });
+  }
+
+
+  // --- FUNCIONES PIZARRA COMUNES ---
+  function drawTeamOnUnifiedField(team, colorClass, half) {
+    const isBottomHalf = half === 'bottom';
+    // Coordenadas fijas OBLIGATORIAS (Esqueleto 1-3-1)
+    const coordsFixed = {
+        portero:   [{x:140, y: isBottomHalf ? 520 : 40}], 
+        defensa:   [{x:50, y: isBottomHalf ? 450 : 100}, {x:140, y: isBottomHalf ? 450 : 100}, {x:230, y: isBottomHalf ? 450 : 100}], 
+        delantero: [{x:140, y: isBottomHalf ? 350 : 200}] 
+    };
+    const slots = JSON.parse(JSON.stringify(coordsFixed));
+    const fillerPositions = {
+        delantero: [ {x: 80, y: isBottomHalf ? 380 : 220}, {x: 200, y: isBottomHalf ? 380 : 220}, {x: 140, y: isBottomHalf ? 400 : 200}],
+        defensa: [ {x: 50, y: isBottomHalf ? 490 : 60}, {x: 230, y: isBottomHalf ? 490 : 60}]
+    };
+    const usedFillerSpots = { delantero: 0, defensa: 0 };
+    
+    team.forEach(p => {
+        let pos = null;
+        if (slots[p.position] && slots[p.position].length > 0) {
+            pos = slots[p.position].shift();
+        } else if (p.position === 'delantero' && usedFillerSpots.delantero < fillerPositions.delantero.length) {
+            pos = fillerPositions.delantero[usedFillerSpots.delantero]; usedFillerSpots.delantero++;
+        } else if (p.position === 'defensa' && usedFillerSpots.defensa < fillerPositions.defensa.length) {
+            pos = fillerPositions.defensa[usedFillerSpots.defensa]; usedFillerSpots.defensa++;
+        } else {
+            const yCenter = isBottomHalf ? 300 + Math.random() * 50 : 250 + Math.random() * 50;
+            pos = {x: 60 + Math.random() * 200, y: yCenter};
+        }
+        createToken(p, fullField, colorClass, pos.x, pos.y);
+    });
+  }
+
+  function createToken(p, div, cls, x, y) {
+    const el = document.createElement('div');
+    el.className = `player-token ${cls}`;
+    el.textContent = p.name.substring(0,2).toUpperCase();
+    el.style.left = x+'px'; el.style.top = y+'px';
+    const l = document.createElement('div'); l.className='player-label'; l.textContent=p.name;
+    el.appendChild(l);
+    
+    // Solo permitir drag si estamos en modo Mister
+    if (document.getElementById('misterView').classList.contains('hidden') === false && !document.getElementById('fieldSection').classList.contains('hidden')) {
+        el.addEventListener('mousedown', startDrag);
+        el.addEventListener('touchstart', startDrag, {passive: false});
+    }
+    div.appendChild(el);
+  }
+
+  // Lógica Drag & Drop (Mister Only)
+  let activeItem = null; let activeContainer = null;
+  let initialX, initialY, xOffset = 0, yOffset = 0;
+
+  function startDrag(e) {
+    const evt = e.type === 'touchstart' ? e.touches[0] : e;
+    initialX = evt.clientX - xOffset; initialY = evt.clientY - yOffset;
+    activeItem = e.currentTarget;
+    activeContainer = activeItem.parentElement;
+    
+    const rect = activeItem.getBoundingClientRect();
+    const parentRect = activeContainer.getBoundingClientRect();
+    const offsetX = evt.clientX - rect.left;
+    const offsetY = evt.clientY - rect.top;
+    
+    const moveHandler = (moveEvent) => {
+        moveEvent.preventDefault(); 
+        const mv = moveEvent.type === 'touchmove' ? moveEvent.touches[0] : moveEvent;
+        
+        let newLeft = mv.clientX - parentRect.left - offsetX;
+        let newTop = mv.clientY - parentRect.top - offsetY;
+        
+        newLeft = Math.max(0, Math.min(newLeft, 320 - 42)); 
+        newTop = Math.max(0, Math.min(newTop, 600 - 42));
+        
+        activeItem.style.left = newLeft + 'px'; activeItem.style.top = newTop + 'px';
+    };
+    
+    const upHandler = () => {
+        document.removeEventListener('mousemove', moveHandler); document.removeEventListener('mouseup', upHandler);
+        document.removeEventListener('touchmove', moveHandler); document.removeEventListener('touchend', upHandler);
+        activeItem = null;
+    };
+    document.addEventListener('mousemove', moveHandler); document.addEventListener('mouseup', upHandler);
+    document.addEventListener('touchmove', moveHandler, {passive: false}); document.addEventListener('touchend', upHandler);
+  }
+
+  async function shareFieldsImage() {
+    const btn = document.getElementById('btnShareWhatsapp');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = "⚡ Generando..."; btn.disabled = true;
+    try {
+        const canvas = await html2canvas(document.getElementById('captureArea'), { backgroundColor: '#e2e8f0', scale: 2, useCORS: true });
+        canvas.toBlob(async (blob) => {
+            const file = new File([blob], 'partido-f7.png', { type: 'image/png' });
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                try { await navigator.share({ files: [file], title: 'Alineación', text: 'Aquí están los equipos ⚽' }); } catch (err) {}
+            } else {
+                const link = document.createElement('a'); link.download = 'alineacion.png'; link.href = canvas.toDataURL(); link.click();
+            }
+            btn.innerHTML = originalText; btn.disabled = false;
+        });
+    } catch (e) { alert("Error al crear imagen"); btn.innerHTML = originalText; btn.disabled = false; }
+  }
+
 });
 </script>
 </body>
