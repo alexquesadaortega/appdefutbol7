@@ -753,8 +753,9 @@ document.addEventListener('DOMContentLoaded', () => {
       let winnerIdx = counts.indexOf(maxVotes);
       const winnerOption = selectedOptionsForPoll[winnerIdx];
       
+      // SOLO ACTUALIZAMOS EL ESTADO A 'closed', MANTENEMOS currentPollId para el guardado de táctica.
       await supabase.from('polls').update({ status: 'closed' }).eq('id', currentPollId);
-      clearMisterState(); 
+      // clearMisterState(); <-- ESTA LÍNEA ES LA CAUSANTE DEL ERROR. LA MOVEMOS A saveFinalTactics().
 
       misterView.classList.add('hidden');
       fieldSection.classList.remove('hidden');
@@ -762,7 +763,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('tacticsBadge').textContent = "EDITANDO";
 
       renderField(winnerOption, true); 
-      alert(`Ganó la Opción ${winnerIdx+1} con ${maxVotes} votos.`);
+      alert(`Ganó la Opción ${winnerIdx+1} con ${maxVotes} votos. Ahora ajusta la pizarra.`);
   }
 
   // =========================================================
@@ -813,12 +814,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const { data: vote } = await supabase.from('votes').select('*').eq('poll_id', currentPollId).eq('player_code', playerInfo.player_code).maybeSingle();
 
       if (vote) {
-          showWaitingScreen(poll.options); // Pasa opciones para resultados LIVE
+          showWaitingScreen(poll.options); 
       } else {
           renderPlayerOptions(poll.options);
       }
       
-      // Listener para cuando el mister cierre
       supabase.channel('poll_status_player').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'polls', filter: `id=eq.${currentPollId}` }, 
           payload => {
              if (payload.new.status === 'closed' && payload.new.final_tactics) {
@@ -860,7 +860,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   player_code: playerInfo.player_code,
                   choice_index: selectedIdx
               }]);
-              if (!error) showWaitingScreen(options); // Pasa opciones después de votar
+              if (!error) showWaitingScreen(options); 
               else alert("Error al votar. ¿Ya has votado?");
           };
 
@@ -875,7 +875,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const waitingDiv = document.getElementById('waitingForMister');
       waitingDiv.classList.remove('hidden');
       
-      // Inicia el monitoreo de resultados en vivo
       setupPlayerLiveResults(options); 
   }
 
@@ -1023,6 +1022,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- GUARDAR Y COMPARTIR ---
   async function saveFinalTactics() {
+      if (!currentPollId) {
+          alert("Error: No hay una encuesta activa para guardar la táctica.");
+          return;
+      }
+      
       const btn = document.getElementById('btnSaveTactics');
       btn.textContent = "Guardando...";
       
@@ -1036,13 +1040,20 @@ document.addEventListener('DOMContentLoaded', () => {
           });
       });
 
+      // Aseguramos que currentPollId sigue presente en esta consulta.
       const { error } = await supabase.from('polls').update({ final_tactics: finalState }).eq('id', currentPollId);
       
       if(!error) {
           btn.textContent = "✅ Guardado";
-          setTimeout(() => btn.textContent = "💾 Actualizar", 2000);
+          
+          // Limpiamos el estado local AHORA, después del guardado exitoso
+          clearMisterState(); 
+          
+          setTimeout(() => btn.textContent = "Pizarra Guardada", 2000);
       } else {
-          alert("Error guardando"); btn.textContent = "Error";
+          alert("Error guardando la táctica final. Revisa la consola."); 
+          console.error(error);
+          btn.textContent = "Error al Guardar";
       }
   }
 
