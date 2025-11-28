@@ -349,6 +349,61 @@ document.addEventListener('DOMContentLoaded', () => {
   const fieldSection = document.getElementById('fieldSection');
   const fullField = document.getElementById('fullField');
 
+  // --- PERSISTENCIA (FIX 1) ---
+  const MISTER_STATE_KEY = 'mister_poll_state';
+
+  function saveMisterState() {
+      if (currentUser) {
+          const state = {
+              pollId: currentPollId,
+              options: generatedOptions,
+              selected: selectedOptionsForPoll,
+          };
+          localStorage.setItem(MISTER_STATE_KEY + '_' + currentUser.id, JSON.stringify(state));
+      }
+  }
+
+  function loadMisterState() {
+      if (!currentUser) return;
+      const stateJSON = localStorage.getItem(MISTER_STATE_KEY + '_' + currentUser.id);
+      if (stateJSON) {
+          const state = JSON.parse(stateJSON);
+          generatedOptions = state.options || [];
+          currentPollId = state.pollId;
+          selectedOptionsForPoll = state.selected || [];
+          
+          if (currentPollId) {
+              // Si hay encuesta activa, vamos directo a los resultados live
+              document.getElementById('authBox').style.display = 'none';
+              document.getElementById('appContent').classList.remove('hidden');
+              displayMisterOptions(generatedOptions); // Necesario para re-renderizar la UI
+              document.getElementById('prePublishStep').classList.add('hidden');
+              document.getElementById('activePollInfo').classList.remove('hidden');
+              const shareUrl = `${window.location.origin}${window.location.pathname}?poll=${currentPollId}`;
+              document.getElementById('pollLinkDisplay').textContent = shareUrl;
+              setupMisterLiveResults();
+              return true;
+          } else if (generatedOptions.length > 0) {
+              // Si hay opciones generadas pero no publicada, mostrar las opciones
+              document.getElementById('authBox').style.display = 'none';
+              document.getElementById('appContent').classList.remove('hidden');
+              displayMisterOptions(generatedOptions);
+              return true;
+          }
+      }
+      return false;
+  }
+  
+  function clearMisterState() {
+      if (currentUser) {
+          localStorage.removeItem(MISTER_STATE_KEY + '_' + currentUser.id);
+      }
+      currentPollId = null;
+      generatedOptions = [];
+      selectedOptionsForPoll = [];
+  }
+
+
   // --- ENRUTAMIENTO SIMPLE ---
   const urlParams = new URLSearchParams(window.location.search);
   const pollParam = urlParams.get('poll');
@@ -384,6 +439,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Volver al inicio clicando título
       document.getElementById('appTitle').onclick = () => window.location.href = window.location.pathname;
+
+      // Comprobar sesión al inicio
+      supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session) {
+              currentUser = session.user;
+              document.getElementById('authBox').style.display = 'none';
+              document.getElementById('appContent').classList.remove('hidden');
+              loadPlayers().then(() => {
+                  loadMisterState(); // Cargar estado DESPUÉS de cargar jugadores
+              });
+          }
+      });
   }
 
   async function handleAuth(type) { 
@@ -404,7 +471,9 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             document.getElementById('authBox').style.display = 'none';
             document.getElementById('appContent').classList.remove('hidden');
-            loadPlayers();
+            loadPlayers().then(() => {
+                loadMisterState(); // Cargar estado DESPUÉS de cargar jugadores
+            });
         }, 500);
     }
   }
@@ -474,7 +543,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- ALGORITMO GENERADOR (Restaurado Completo) ---
+  // --- ALGORITMO GENERADOR ---
   function generateTeamOptions() { 
     document.getElementById('generateError').style.display = 'none';
     const checks = document.querySelectorAll('.p-select:checked');
@@ -491,12 +560,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let variations = [];
     const seenHashes = new Set(); 
 
-    // Bucle de 800 intentos para encontrar las mejores combinaciones
     for(let i=0; i<800; i++) { 
         const attempt = createStrictMatch(pool);
         if(!attempt) continue;
         
-        // Hash único para no repetir combinaciones
         const idsA = attempt.teamA.map(p => p.id).sort().join('-');
         const idsB = attempt.teamB.map(p => p.id).sort().join('-');
         const hash = [idsA, idsB].sort().join('::');
@@ -512,10 +579,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (generatedOptions.length === 0) { showError("No se pudieron generar equipos válidos."); return; }
     
     displayMisterOptions(generatedOptions);
+    saveMisterState(); // Guardar opciones generadas
   }
 
   function createStrictMatch(originalPool) {
-    // Clonar para no mutar el original
     const pool = JSON.parse(JSON.stringify(originalPool));
     
     const gks = shuffle(pool.filter(p => p.position === 'portero'));
@@ -524,20 +591,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const teamA = []; const teamB = [];
 
-    // 1. Porteros (Obligatorio)
     if(gks.length < 2) return null;
     teamA.push(gks.pop()); teamB.push(gks.pop());            
     
-    // 2. Defensas (3 por equipo Obligatorio)
     if(defs.length < 6) return null;
     for(let k=0;k<3;k++) { teamA.push(defs.pop()); teamB.push(defs.pop()); } 
     
-    // 3. Delanteros (1 por equipo Obligatorio, si hay)
     if(fwds.length >= 2) { 
         teamA.push(fwds.pop()); teamB.push(fwds.pop()); 
     }
 
-    // 4. Relleno con lo que sobra
     let leftovers = [...gks, ...defs, ...fwds]; 
     leftovers = shuffle(leftovers);
 
@@ -559,18 +622,19 @@ document.addEventListener('DOMContentLoaded', () => {
   function displayMisterOptions(options) {
     const container = document.getElementById('teamsResult');
     container.innerHTML = '';
-    selectedOptionsForPoll = [];
+    // selectedOptionsForPoll = []; // No resetear si viene de loadState
     updatePublishButton();
     
     document.getElementById('misterPollControls').classList.remove('hidden');
 
     options.forEach((opt, index) => {
+        const isSelected = selectedOptionsForPoll.includes(opt);
         const div = document.createElement('div');
-        div.className = 'option-card';
+        div.className = `option-card ${isSelected ? 'selected' : ''}`;
         div.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px; margin-bottom:10px;">
                 <div style="display:flex; align-items:center;">
-                    <input type="checkbox" class="opt-checkbox" data-idx="${index}">
+                    <input type="checkbox" class="opt-checkbox" data-idx="${index}" ${isSelected ? 'checked' : ''}>
                     <h4 style="margin:0; color:var(--primary);">Opción ${index + 1}</h4>
                 </div>
                 <span class="tag" style="background:#334155; color:#fff;">Dif: ${opt.diff.toFixed(2)}</span>
@@ -585,16 +649,21 @@ document.addEventListener('DOMContentLoaded', () => {
         // Evento Checkbox
         div.querySelector('.opt-checkbox').addEventListener('change', (e) => {
             const idx = parseInt(e.target.dataset.idx);
+            const option = generatedOptions[idx];
+
             if (e.target.checked) {
                 if (selectedOptionsForPoll.length >= 3) {
                     e.target.checked = false; alert("Solo puedes seleccionar 3 opciones.");
                 } else {
-                    div.classList.add('selected'); selectedOptionsForPoll.push(generatedOptions[idx]);
+                    div.classList.add('selected'); 
+                    if (!selectedOptionsForPoll.includes(option)) selectedOptionsForPoll.push(option);
                 }
             } else {
-                div.classList.remove('selected'); selectedOptionsForPoll = selectedOptionsForPoll.filter(o => o !== generatedOptions[idx]);
+                div.classList.remove('selected'); 
+                selectedOptionsForPoll = selectedOptionsForPoll.filter(o => o !== option);
             }
             updatePublishButton();
+            saveMisterState(); // Guardar selección
         });
 
         // Evento Previsualizar
@@ -622,7 +691,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- GESTIÓN DE LA VOTACIÓN ---
   async function publishPoll() {
-      if(!currentUser) return;
+      if(!currentUser || currentPollId) return;
       document.getElementById('btnPublishPoll').disabled = true;
       document.getElementById('btnPublishPoll').innerText = "Creando...";
 
@@ -635,6 +704,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) { alert('Error creando encuesta'); return; }
       
       currentPollId = data[0].id;
+      
+      // FIX 1: Persistencia
+      saveMisterState();
       
       // Cambiar UI
       document.getElementById('prePublishStep').classList.add('hidden');
@@ -683,6 +755,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Actualizar DB
       await supabase.from('polls').update({ status: 'closed' }).eq('id', currentPollId);
+      clearMisterState(); // Limpiar estado local
 
       // Mostrar Pizarra al Mister
       misterView.classList.add('hidden');
@@ -697,6 +770,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================
   // ===================== LÓGICA JUGADOR ====================
   // =========================================================
+  
+  // FIX 2: Función auxiliar para mostrar la lista completa en el lado del jugador
+  function renderPlayerListForPlayerView(team, color) {
+      const names = team.map(p => p.name.split(' ')[0]).join(', '); // Solo el primer nombre
+      return `<p style="font-size:0.8rem; margin:5px 0 10px 0; color:${color}; line-height:1.4;">
+          ${names}
+      </p>`;
+  }
 
   function initPlayerMode(pollId) {
       currentPollId = pollId;
@@ -710,11 +791,9 @@ document.addEventListener('DOMContentLoaded', () => {
           if (!code) return msg.textContent = "Introduce tu código";
           msg.textContent = "Verificando...";
           
-          // Buscar jugador por código (case insensitive idealmente, aqui uppercase forzado)
           const { data, error } = await supabase.from('players').select('*').eq('player_code', code).maybeSingle();
           
           if (error || !data) {
-              console.log(error);
               msg.textContent = "❌ Código no encontrado.";
               return;
           }
@@ -726,17 +805,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function setupPlayerPollView() {
-      // Obtener Poll
       const { data: poll } = await supabase.from('polls').select('*').eq('id', currentPollId).single();
       if (!poll) { alert("Error de encuesta"); return; }
 
-      // 1. Si ya está cerrada -> Ver Pizarra Final
       if (poll.status === 'closed') {
           showFinalField(poll.final_tactics);
           return;
       }
       
-      // 2. Si está abierta -> Comprobar si ya votó
       const { data: vote } = await supabase.from('votes').select('*').eq('poll_id', currentPollId).eq('player_code', playerInfo.player_code).maybeSingle();
 
       if (vote) {
@@ -745,7 +821,6 @@ document.addEventListener('DOMContentLoaded', () => {
           renderPlayerOptions(poll.options);
       }
       
-      // Listener para cuando el mister cierre
       supabase.channel('poll_status').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'polls', filter: `id=eq.${currentPollId}` }, 
           payload => {
              if (payload.new.status === 'closed' && payload.new.final_tactics) {
@@ -761,22 +836,37 @@ document.addEventListener('DOMContentLoaded', () => {
       container.innerHTML = '';
       
       options.forEach((opt, idx) => {
-          const btn = document.createElement('button');
-          btn.className = 'vote-btn';
-          btn.innerHTML = `
-            <div style="font-size:1.1rem; font-weight:800;">OPCIÓN ${idx+1}</div>
-            <div style="font-size:0.8rem; margin-top:5px;">Negro (${opt.avgA}) vs Blanco (${opt.avgB})</div>
+          const card = document.createElement('div');
+          card.className = 'box';
+          card.style.background = 'rgba(255,255,255,0.05)';
+          card.style.marginBottom = '20px';
+          card.innerHTML = `
+              <h4 style="color:var(--primary); text-align:center; margin-bottom:15px;">OPCIÓN ${idx+1}</h4>
+              <div style="display:flex; justify-content:space-around; text-align:center;">
+                  <div>
+                      <strong style="color:#94a3b8;">Negro (${opt.avgA})</strong>
+                      ${renderPlayerListForPlayerView(opt.teamA, '#94a3b8')}
+                  </div>
+                  <div style="border-left:1px dashed #334155; padding-left:10px;">
+                      <strong style="color:#f1f5f9;">Blanco (${opt.avgB})</strong>
+                      ${renderPlayerListForPlayerView(opt.teamB, '#f1f5f9')}
+                  </div>
+              </div>
+              <button class="vote-btn" data-idx="${idx}" style="margin-top:20px;">VOTAR ESTA OPCIÓN</button>
           `;
-          btn.onclick = async () => {
+          
+          card.querySelector('.vote-btn').onclick = async (e) => {
+              const selectedIdx = parseInt(e.target.dataset.idx);
               const { error } = await supabase.from('votes').insert([{
                   poll_id: currentPollId,
                   player_code: playerInfo.player_code,
-                  choice_index: idx
+                  choice_index: selectedIdx
               }]);
               if (!error) showWaitingScreen();
               else alert("Error al votar. ¿Ya has votado?");
           };
-          container.appendChild(btn);
+
+          container.appendChild(card);
       });
   }
 
@@ -787,10 +877,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function showFinalField(tactics) {
-      if(!tactics) return; // Si el mister cerró pero no guardó aun, esperamos
+      if(!tactics) return;
       playerVoteView.classList.add('hidden');
       fieldSection.classList.remove('hidden');
-      document.getElementById('misterFieldControls').classList.add('hidden'); // Ocultar controles mister
+      document.getElementById('misterFieldControls').classList.add('hidden');
       document.getElementById('tacticsBadge').textContent = "OFICIAL";
       document.getElementById('tacticsBadge').style.background = "var(--primary)";
       
@@ -810,28 +900,25 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderFieldFromState(savedState) {
       fullField.querySelectorAll('.player-token').forEach(e => e.remove());
       savedState.forEach(t => {
-          createToken(t.name, t.cls, t.x, t.y, false); // false = NO SE MUEVE
+          createToken(t.name, t.cls, t.x, t.y, false);
       });
   }
 
   function drawTeam(team, colorClass, half, isInteractive) {
     const isBot = half === 'bottom';
-    // Coordenadas fijas por defecto (1-3-1)
     const coordsFixed = {
         portero:   [{x:140, y: isBot ? 520 : 40}], 
         defensa:   [{x:50, y: isBot ? 450 : 100}, {x:140, y: isBot ? 450 : 100}, {x:230, y: isBot ? 450 : 100}], 
         delantero: [{x:140, y: isBot ? 350 : 200}] 
     };
     
-    // Copia para consumir
     const slots = JSON.parse(JSON.stringify(coordsFixed));
     
     team.forEach(p => {
-        let pos = {x: 100, y: 300}; // Fallback
+        let pos = {x: 100, y: 300};
         if (slots[p.position] && slots[p.position].length > 0) {
             pos = slots[p.position].shift();
         } else {
-            // Si sobran defensas o delanteros, ponerlos cerca
             const yBase = isBot ? 400 : 150;
             pos = { x: Math.random() * 250 + 20, y: yBase + (Math.random()*40) };
         }
@@ -851,7 +938,6 @@ document.addEventListener('DOMContentLoaded', () => {
     el.appendChild(l);
     
     if (isInteractive) {
-        // Eventos táctiles y ratón explicítos
         el.addEventListener('mousedown', dragStart);
         el.addEventListener('touchstart', dragStart, {passive: false});
     }
@@ -870,11 +956,9 @@ document.addEventListener('DOMContentLoaded', () => {
     startX = evt.clientX;
     startY = evt.clientY;
     
-    // Parseamos left/top quitando 'px'
     initialLeft = parseFloat(activeItem.style.left || 0);
     initialTop = parseFloat(activeItem.style.top || 0);
 
-    // Listeners globales
     document.addEventListener('mousemove', dragMove);
     document.addEventListener('mouseup', dragEnd);
     document.addEventListener('touchmove', dragMove, {passive: false});
@@ -883,17 +967,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function dragMove(e) {
     if (!activeItem) return;
-    e.preventDefault(); // Evitar scroll en movil
+    e.preventDefault();
     
     const evt = e.type === 'touchmove' ? e.touches[0] : e;
     const dx = evt.clientX - startX;
     const dy = evt.clientY - startY;
 
-    // Límites del campo (320x600 aprox)
     let newX = initialLeft + dx;
     let newY = initialTop + dy;
     
-    // Restricciones simples
     if(newX < 0) newX = 0; if(newX > 280) newX = 280;
     if(newY < 0) newY = 0; if(newY > 560) newY = 560;
 
